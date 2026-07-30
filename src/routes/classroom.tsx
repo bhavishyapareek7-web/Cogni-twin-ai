@@ -33,7 +33,7 @@ export const Route = createFileRoute("/classroom")({
       },
     ],
   }),
-  component: Classroom;
+  component: Classroom,
 });
 
 type ChatMessage = { role: "user" | "tutor"; text: string };

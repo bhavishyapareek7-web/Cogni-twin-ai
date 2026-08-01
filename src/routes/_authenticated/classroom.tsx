@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,27 +12,35 @@ import {
   NotebookPen,
   CircleCheck,
   CircleX,
+  Loader2,
+  Sparkles,
+  RotateCcw,
 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { lesson, lessonQuiz } from "@/lib/twin-data";
+import { generateLesson, askTutor, type GeneratedLesson } from "@/lib/lesson.functions";
+import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/classroom")({
+export const Route = createFileRoute("/_authenticated/classroom")({
   head: () => ({
     meta: [
       { title: "Immersive Classroom — EduTwin AI" },
       {
         name: "description",
         content:
-          "An AI classroom that lectures with slides, draws on the board, answers questions live and quizzes you at the end.",
+          "Type any topic and get a live AI lecture with slides, a tutor you can interrupt, notes and an end-of-lesson quiz.",
       },
       { property: "og:title", content: "Immersive Classroom — EduTwin AI" },
       {
         property: "og:description",
-        content: "Live AI teaching with visual slides, voice mode, notes and an end-of-lesson quiz.",
+        content: "Learn anything: AI-generated slides, live tutor chat, notes and a quiz.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Classroom,
@@ -38,19 +48,71 @@ export const Route = createFileRoute("/classroom")({
 
 type ChatMessage = { role: "user" | "tutor"; text: string };
 
+const starterLesson: GeneratedLesson = {
+  topic: fallbackLesson.topic,
+  subject: fallbackLesson.subject,
+  slides: fallbackLesson.slides,
+  quiz: lessonQuiz,
+};
+
+const suggestions = [
+  "Anatomy of a black hole",
+  "How mRNA vaccines work",
+  "Integration by parts",
+  "The French Revolution in 10 minutes",
+];
+
 function Classroom() {
+  const buildLesson = useServerFn(generateLesson);
+  const askServer = useServerFn(askTutor);
+
+  const [topic, setTopic] = useState("");
+  const [lesson, setLesson] = useState<GeneratedLesson>(starterLesson);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [notes, setNotes] = useState("");
   const [input, setInput] = useState("");
   const [answer, setAnswer] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "tutor", text: "We're covering black holes today. Stop me any time — literally, just type." },
+    {
+      role: "tutor",
+      text: `We're covering ${starterLesson.topic.toLowerCase()} today. Stop me any time — literally, just type.`,
+    },
   ]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const slide = lesson.slides[index];
+  const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;
+
+  const lessonMutation = useMutation({
+    mutationFn: (t: string) => buildLesson({ data: { topic: t } }),
+    onSuccess: (next) => {
+      setLesson(next);
+      setIndex(0);
+      setAnswer(null);
+      setNotes("");
+      setPlaying(true);
+      setMessages([
+        {
+          role: "tutor",
+          text: `New lesson ready: ${next.topic}. I'll walk you through it slide by slide — interrupt whenever.`,
+        },
+      ]);
+    },
+    onError: (error: Error) =>
+      toast.error(error.message || "Couldn't build that lesson. Try rephrasing the topic."),
+  });
+
+  const tutorMutation = useMutation({
+    mutationFn: (question: string) =>
+      askServer({ data: { topic: lesson.topic, slideTitle: slide.title, question } }),
+    onSuccess: (res) => setMessages((m) => [...m, { role: "tutor", text: res.answer }]),
+    onError: () =>
+      setMessages((m) => [
+        ...m,
+        { role: "tutor", text: "I lost my train of thought there — ask me again?" },
+      ]),
+  });
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,28 +122,73 @@ function Classroom() {
     if (!playing || atEnd) return;
     const t = setTimeout(() => setIndex((i) => Math.min(i + 1, lesson.slides.length - 1)), 12000);
     return () => clearTimeout(t);
-  }, [playing, index, atEnd]);
+  }, [playing, index, atEnd, lesson.slides.length]);
+
+  const teach = (t: string) => {
+    const clean = t.trim();
+    if (clean.length < 2) {
+      toast.error("Give me a topic to teach.");
+      return;
+    }
+    setTopic(clean);
+    lessonMutation.mutate(clean);
+  };
 
   const ask = () => {
     const q = input.trim();
-    if (!q) return;
+    if (!q || tutorMutation.isPending) return;
     setInput("");
     setMessages((m) => [...m, { role: "user", text: q }]);
     setPlaying(false);
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "tutor",
-          text: `Good question. Staying on "${slide.title}": ${slide.narration} Want me to redraw it more slowly?`,
-        },
-      ]);
-    }, 700);
+    tutorMutation.mutate(q);
   };
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      <div className="mx-auto max-w-7xl space-y-4 px-4 py-6 sm:px-6">
+        <div className="panel p-4 sm:p-5">
+          <p className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+            <Sparkles className="size-3.5" /> Learn anything
+          </p>
+          <form
+            className="mt-3 flex flex-col gap-2 sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              teach(topic);
+            }}
+          >
+            <Input
+              value={topic}
+              maxLength={120}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="What do you want to learn today? e.g. quantum tunnelling"
+              className="bg-background"
+            />
+            <Button type="submit" className="bg-neural" disabled={lessonMutation.isPending}>
+              {lessonMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" /> Building lesson…
+                </>
+              ) : (
+                "Teach me"
+              )}
+            </Button>
+          </form>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                type="button"
+                disabled={lessonMutation.isPending}
+                onClick={() => teach(s)}
+                className="rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="panel overflow-hidden">
           <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3 sm:flex sm:justify-between sm:px-5">
             <div className="min-w-0">
@@ -104,7 +211,17 @@ function Classroom() {
 
           <div className="grid gap-4 p-4 lg:grid-cols-[1.7fr_1fr] lg:p-5">
             <div className="space-y-4">
-              <div className="rounded-2xl border border-border bg-surface p-5">
+              <div className="relative rounded-2xl border border-border bg-surface p-5">
+                {lessonMutation.isPending && (
+                  <div className="absolute inset-0 z-10 grid place-items-center rounded-2xl bg-background/70 backdrop-blur-sm">
+                    <div className="text-center">
+                      <Loader2 className="mx-auto size-6 animate-spin text-accent" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Designing your lesson on {topic}…
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <h2 className="text-lg font-bold">{slide.title}</h2>
                 <ul className="mt-4 space-y-3">
                   {slide.bullets.map((b) => (
@@ -171,11 +288,11 @@ function Classroom() {
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">
                     End-of-lesson check
                   </p>
-                  <h3 className="mt-2 text-base font-semibold">{lessonQuiz.question}</h3>
+                  <h3 className="mt-2 text-base font-semibold">{lesson.quiz.question}</h3>
                   <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {lessonQuiz.options.map((opt, i) => {
+                    {lesson.quiz.options.map((opt, i) => {
                       const chosen = answer === i;
-                      const correct = i === lessonQuiz.answerIndex;
+                      const correct = i === lesson.quiz.answerIndex;
                       return (
                         <button
                           key={opt}
@@ -201,9 +318,23 @@ function Classroom() {
                     })}
                   </div>
                   {answer !== null && (
-                    <p className="mt-4 rounded-xl border border-primary/30 bg-primary/10 p-3 text-sm leading-relaxed">
-                      {lessonQuiz.explanation}
-                    </p>
+                    <>
+                      <p className="mt-4 rounded-xl border border-primary/30 bg-primary/10 p-3 text-sm leading-relaxed">
+                        {lesson.quiz.explanation}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => {
+                          setAnswer(null);
+                          setIndex(0);
+                          setPlaying(true);
+                        }}
+                      >
+                        <RotateCcw className="size-4" /> Replay lesson
+                      </Button>
+                    </>
                   )}
                 </div>
               )}
@@ -227,6 +358,11 @@ function Classroom() {
                       </p>
                     </div>
                   ))}
+                  {tutorMutation.isPending && (
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="size-3.5 animate-spin" /> Thinking…
+                    </p>
+                  )}
                   <div ref={chatEndRef} />
                 </div>
                 <div className="mt-3 flex items-end gap-2">
@@ -246,7 +382,13 @@ function Classroom() {
                   <Button size="icon" variant="outline" aria-label="Voice mode">
                     <Mic className="size-4" />
                   </Button>
-                  <Button size="icon" className="bg-neural" onClick={ask} aria-label="Send">
+                  <Button
+                    size="icon"
+                    className="bg-neural"
+                    onClick={ask}
+                    disabled={tutorMutation.isPending}
+                    aria-label="Send"
+                  >
                     <Send className="size-4" />
                   </Button>
                 </div>

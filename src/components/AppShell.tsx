@@ -1,6 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Brain, LayoutDashboard, Presentation, Dna } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Brain, LayoutDashboard, Presentation, Dna, LogOut, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -12,6 +17,21 @@ const nav = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["auth-user"],
+    queryFn: async () => (await supabase.auth.getUser()).data.user,
+    staleTime: 30_000,
+  });
+
+  const signOut = async () => {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
 
   return (
     <div className="min-h-screen">
@@ -25,26 +45,46 @@ export function AppShell({ children }: { children: ReactNode }) {
               Edu<span className="text-gradient">Twin</span> AI
             </span>
           </Link>
-          <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">
-            {nav.map((item) => {
-              const active = pathname === item.to;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors",
-                    active
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
-                  )}
-                >
-                  <item.icon className="size-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="flex shrink-0 items-center gap-2">
+            <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">
+              {nav.map((item) => {
+                const active = pathname === item.to;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors",
+                      active
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                    )}
+                  >
+                    <item.icon className="size-4" />
+                    <span className="hidden sm:inline">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            {isLoading ? (
+              <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            ) : user ? (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={signOut}
+                className="ml-1"
+                aria-label="Sign out"
+              >
+                <LogOut className="size-4" />
+                <span className="ml-1 hidden sm:inline">Sign out</span>
+              </Button>
+            ) : (
+              <Button size="sm" className="ml-1 bg-neural" asChild>
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
       <main>{children}</main>

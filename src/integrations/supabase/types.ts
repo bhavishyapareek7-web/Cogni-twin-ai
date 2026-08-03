@@ -56,6 +56,51 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_sessions: {
+        Row: {
+          completed: boolean
+          created_at: string
+          id: string
+          lesson: Json
+          messages: Json
+          notes: string
+          quiz_answer: number | null
+          slide_index: number
+          subject: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          lesson?: Json
+          messages?: Json
+          notes?: string
+          quiz_answer?: number | null
+          slide_index?: number
+          subject?: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          id?: string
+          lesson?: Json
+          messages?: Json
+          notes?: string
+          quiz_answer?: number | null
+          slide_index?: number
+          subject?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mock_tests: {
         Row: {
           accuracy: number

@@ -14,30 +14,270 @@ export type Database = {
   }
   public: {
     Tables: {
-      profiles: {
+      flashcards: {
         Row: {
-          avatar_url: string | null
+          back: string
           created_at: string
-          display_name: string | null
-          exam_goal: string | null
+          due_on: string
+          ease: number
+          front: string
           id: string
+          interval_days: number
+          reviews: number
+          topic: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          avatar_url?: string | null
+          back: string
           created_at?: string
-          display_name?: string | null
-          exam_goal?: string | null
-          id: string
+          due_on?: string
+          ease?: number
+          front: string
+          id?: string
+          interval_days?: number
+          reviews?: number
+          topic: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          avatar_url?: string | null
+          back?: string
           created_at?: string
-          display_name?: string | null
-          exam_goal?: string | null
+          due_on?: string
+          ease?: number
+          front?: string
           id?: string
+          interval_days?: number
+          reviews?: number
+          topic?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mock_tests: {
+        Row: {
+          accuracy: number
+          analysis: Json
+          created_at: string
+          exam: string
+          id: string
+          predicted_percentile: number | null
+          rank_high: number | null
+          rank_low: number | null
+          score: number
+          topic: string
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number
+          analysis?: Json
+          created_at?: string
+          exam: string
+          id?: string
+          predicted_percentile?: number | null
+          rank_high?: number | null
+          rank_low?: number | null
+          score?: number
+          topic: string
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number
+          analysis?: Json
+          created_at?: string
+          exam?: string
+          id?: string
+          predicted_percentile?: number | null
+          rank_high?: number | null
+          rank_low?: number | null
+          score?: number
+          topic?: string
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          kind: string
+          title: string
+          topic: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          kind?: string
+          title: string
+          topic: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          title?: string
+          topic?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          board: string | null
+          created_at: string
+          daily_hours: number
+          display_name: string | null
+          exam_date: string | null
+          exam_goal: string | null
+          explanation_style: string | null
+          grade: string | null
+          id: string
+          language: string
+          last_active_on: string | null
+          learning_goal: string | null
+          learning_style: string | null
+          level: number
+          onboarded: boolean
+          streak_days: number
+          strong_subjects: string[]
+          subjects: string[]
+          target_exams: string[]
+          updated_at: string
+          weak_subjects: string[]
+          xp: number
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          board?: string | null
+          created_at?: string
+          daily_hours?: number
+          display_name?: string | null
+          exam_date?: string | null
+          exam_goal?: string | null
+          explanation_style?: string | null
+          grade?: string | null
+          id: string
+          language?: string
+          last_active_on?: string | null
+          learning_goal?: string | null
+          learning_style?: string | null
+          level?: number
+          onboarded?: boolean
+          streak_days?: number
+          strong_subjects?: string[]
+          subjects?: string[]
+          target_exams?: string[]
+          updated_at?: string
+          weak_subjects?: string[]
+          xp?: number
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          board?: string | null
+          created_at?: string
+          daily_hours?: number
+          display_name?: string | null
+          exam_date?: string | null
+          exam_goal?: string | null
+          explanation_style?: string | null
+          grade?: string | null
+          id?: string
+          language?: string
+          last_active_on?: string | null
+          learning_goal?: string | null
+          learning_style?: string | null
+          level?: number
+          onboarded?: boolean
+          streak_days?: number
+          strong_subjects?: string[]
+          subjects?: string[]
+          target_exams?: string[]
+          updated_at?: string
+          weak_subjects?: string[]
+          xp?: number
+        }
+        Relationships: []
+      }
+      study_plans: {
+        Row: {
+          created_at: string
+          id: string
+          plan: Json
+          rationale: string | null
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan?: Json
+          rationale?: string | null
+          updated_at?: string
+          user_id: string
+          week_start?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan?: Json
+          rationale?: string | null
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
+      twin_memory: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          id: string
+          kind: string
+          note: string
+          topic: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind: string
+          note: string
+          topic?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string
+          topic?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

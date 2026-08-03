@@ -1,6 +1,17 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Brain, LayoutDashboard, Presentation, Dna, LogOut, Loader2 } from "lucide-react";
+import {
+  Brain,
+  LayoutDashboard,
+  Presentation,
+  Dna,
+  LogOut,
+  Loader2,
+  Lightbulb,
+  Layers,
+  Target,
+  CalendarDays,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,10 +20,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", label: "Home", icon: Brain },
   { to: "/dashboard", label: "Twin", icon: LayoutDashboard },
   { to: "/genome", label: "Knowledge DNA", icon: Dna },
   { to: "/classroom", label: "Classroom", icon: Presentation },
+  { to: "/doubts", label: "Doubts", icon: Lightbulb },
+  { to: "/revise", label: "Revise", icon: Layers },
+  { to: "/tests", label: "Tests", icon: Target },
+  { to: "/planner", label: "Planner", icon: CalendarDays },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

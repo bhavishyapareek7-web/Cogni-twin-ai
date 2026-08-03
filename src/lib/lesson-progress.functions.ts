@@ -41,13 +41,14 @@ export const saveLessonProgress = createServerFn({ method: "POST" })
       user_id: context.userId,
       topic: data.topic,
       subject: data.subject,
-      lesson: data.lesson,
+      lesson: data.lesson as never,
       slide_index: data.slideIndex,
       notes: data.notes,
-      messages: data.messages,
+      messages: data.messages as never,
       quiz_answer: data.quizAnswer ?? null,
       completed: data.completed,
     };
+
 
     if (data.id) {
       const { data: updated, error } = await context.supabase

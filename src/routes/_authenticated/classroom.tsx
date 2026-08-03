@@ -312,6 +312,61 @@ function Classroom() {
           </div>
         </div>
 
+        {sessions.length > 0 && (
+          <div className="panel p-4 sm:p-5">
+            <p className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+              <History className="size-3.5" /> Continue where you left off
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {sessions.map((s) => {
+                const total = s.lesson.slides?.length ?? 1;
+                const pct = Math.round(((s.slideIndex + 1) / total) * 100);
+                return (
+                  <div
+                    key={s.id}
+                    className={cn(
+                      "rounded-xl border bg-surface p-3",
+                      s.id === sessionId ? "border-primary/50" : "border-border",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{s.topic}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Slide {Math.min(s.slideIndex + 1, total)} of {total}
+                          {s.completed ? " · finished" : ""}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label={`Delete saved lesson ${s.topic}`}
+                        onClick={() => deleteMutation.mutate(s.id)}
+                        className="text-muted-foreground transition-colors hover:text-weak"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
+                      <div className="h-full rounded-full bg-neural" style={{ width: `${pct}%` }} />
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 w-full"
+                      disabled={s.id === sessionId}
+                      onClick={() => resume(s)}
+                    >
+                      {s.id === sessionId ? "Current lesson" : "Resume"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
+
         <div className="panel overflow-hidden">
           <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3 sm:flex sm:justify-between sm:px-5">
             <div className="min-w-0">

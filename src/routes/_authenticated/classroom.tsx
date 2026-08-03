@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ChevronLeft,
@@ -15,6 +15,9 @@ import {
   Loader2,
   Sparkles,
   RotateCcw,
+  History,
+  Trash2,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -22,8 +25,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { generateLesson, askTutor, type GeneratedLesson } from "@/lib/lesson.functions";
+import {
+  saveLessonProgress,
+  listLessonSessions,
+  deleteLessonSession,
+  type LessonSession,
+} from "@/lib/lesson-progress.functions";
 import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/classroom")({
   head: () => ({

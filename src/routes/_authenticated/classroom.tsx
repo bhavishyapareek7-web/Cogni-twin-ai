@@ -75,6 +75,10 @@ const suggestions = [
 function Classroom() {
   const buildLesson = useServerFn(generateLesson);
   const askServer = useServerFn(askTutor);
+  const saveProgress = useServerFn(saveLessonProgress);
+  const listSessions = useServerFn(listLessonSessions);
+  const removeSession = useServerFn(deleteLessonSession);
+  const queryClient = useQueryClient();
 
   const [topic, setTopic] = useState("");
   const [lesson, setLesson] = useState<GeneratedLesson>(starterLesson);
@@ -89,10 +93,72 @@ function Classroom() {
       text: `We're covering ${starterLesson.topic.toLowerCase()} today. Stop me any time — literally, just type.`,
     },
   ]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;
+
+  const sessionsQuery = useQuery({
+    queryKey: ["lesson-sessions"],
+    queryFn: () => listSessions({ data: undefined }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (payload: {
+      id: string | null;
+      lesson: GeneratedLesson;
+      slideIndex: number;
+      notes: string;
+      messages: ChatMessage[];
+      quizAnswer: number | null;
+      completed: boolean;
+    }) =>
+      saveProgress({
+        data: {
+          id: payload.id,
+          topic: payload.lesson.topic,
+          subject: payload.lesson.subject,
+          lesson: payload.lesson as unknown as Record<string, unknown>,
+          slideIndex: payload.slideIndex,
+          notes: payload.notes,
+          messages: payload.messages,
+          quizAnswer: payload.quizAnswer,
+          completed: payload.completed,
+        },
+      }),
+    onSuccess: (res) => {
+      setSessionId(res.id);
+      setSavedAt(new Date());
+      void queryClient.invalidateQueries({ queryKey: ["lesson-sessions"] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeSession({ data: { id } }),
+    onSuccess: (_r, id) => {
+      if (id === sessionId) setSessionId(null);
+      void queryClient.invalidateQueries({ queryKey: ["lesson-sessions"] });
+    },
+    onError: () => toast.error("Couldn't remove that saved lesson."),
+  });
+
+  const persist = useCallback(
+    (overrides?: Partial<{ slideIndex: number; notes: string; messages: ChatMessage[]; quizAnswer: number | null }>) => {
+      saveMutation.mutate({
+        id: sessionId,
+        lesson,
+        slideIndex: overrides?.slideIndex ?? index,
+        notes: overrides?.notes ?? notes,
+        messages: overrides?.messages ?? messages,
+        quizAnswer: overrides?.quizAnswer ?? answer,
+        completed: (overrides?.slideIndex ?? index) === lesson.slides.length - 1,
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionId, lesson, index, notes, messages, answer],
+  );
 
   const lessonMutation = useMutation({
     mutationFn: (t: string) => buildLesson({ data: { topic: t } }),
@@ -102,12 +168,24 @@ function Classroom() {
       setAnswer(null);
       setNotes("");
       setPlaying(true);
-      setMessages([
+      setSessionId(null);
+      setSavedAt(null);
+      const opening: ChatMessage[] = [
         {
           role: "tutor",
           text: `New lesson ready: ${next.topic}. I'll walk you through it slide by slide — interrupt whenever.`,
         },
-      ]);
+      ];
+      setMessages(opening);
+      saveMutation.mutate({
+        id: null,
+        lesson: next,
+        slideIndex: 0,
+        notes: "",
+        messages: opening,
+        quizAnswer: null,
+        completed: false,
+      });
     },
     onError: (error: Error) =>
       toast.error(error.message || "Couldn't build that lesson. Try rephrasing the topic."),
@@ -116,7 +194,13 @@ function Classroom() {
   const tutorMutation = useMutation({
     mutationFn: (question: string) =>
       askServer({ data: { topic: lesson.topic, slideTitle: slide.title, question } }),
-    onSuccess: (res) => setMessages((m) => [...m, { role: "tutor", text: res.answer }]),
+    onSuccess: (res) => {
+      setMessages((m) => {
+        const next: ChatMessage[] = [...m, { role: "tutor", text: res.answer }];
+        persist({ messages: next });
+        return next;
+      });
+    },
     onError: () =>
       setMessages((m) => [
         ...m,
@@ -133,6 +217,31 @@ function Classroom() {
     const t = setTimeout(() => setIndex((i) => Math.min(i + 1, lesson.slides.length - 1)), 12000);
     return () => clearTimeout(t);
   }, [playing, index, atEnd, lesson.slides.length]);
+
+  // Autosave slide position + notes (debounced) once the lesson is tracked.
+  useEffect(() => {
+    if (!sessionId) return;
+    const t = setTimeout(() => persist(), 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, index, notes, answer]);
+
+  const resume = (s: LessonSession) => {
+    setLesson(s.lesson);
+    setTopic(s.topic);
+    setIndex(Math.min(s.slideIndex, Math.max(0, s.lesson.slides.length - 1)));
+    setNotes(s.notes);
+    setMessages(
+      s.messages.length
+        ? s.messages
+        : [{ role: "tutor", text: `Back to ${s.topic}. Ask me anything.` }],
+    );
+    setAnswer(s.quizAnswer);
+    setSessionId(s.id);
+    setSavedAt(new Date(s.updatedAt));
+    setPlaying(false);
+    toast.success(`Resumed “${s.topic}” at slide ${Math.min(s.slideIndex, s.lesson.slides.length - 1) + 1}`);
+  };
 
   const teach = (t: string) => {
     const clean = t.trim();
@@ -152,6 +261,10 @@ function Classroom() {
     setPlaying(false);
     tutorMutation.mutate(q);
   };
+
+  const sessions = sessionsQuery.data ?? [];
+
+
 
   return (
     <AppShell>

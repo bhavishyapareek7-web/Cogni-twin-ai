@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ChevronLeft,
@@ -15,6 +15,9 @@ import {
   Loader2,
   Sparkles,
   RotateCcw,
+  History,
+  Trash2,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -22,8 +25,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { generateLesson, askTutor, type GeneratedLesson } from "@/lib/lesson.functions";
+import {
+  saveLessonProgress,
+  listLessonSessions,
+  deleteLessonSession,
+  type LessonSession,
+} from "@/lib/lesson-progress.functions";
 import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/classroom")({
   head: () => ({
@@ -65,6 +75,10 @@ const suggestions = [
 function Classroom() {
   const buildLesson = useServerFn(generateLesson);
   const askServer = useServerFn(askTutor);
+  const saveProgress = useServerFn(saveLessonProgress);
+  const listSessions = useServerFn(listLessonSessions);
+  const removeSession = useServerFn(deleteLessonSession);
+  const queryClient = useQueryClient();
 
   const [topic, setTopic] = useState("");
   const [lesson, setLesson] = useState<GeneratedLesson>(starterLesson);
@@ -79,10 +93,72 @@ function Classroom() {
       text: `We're covering ${starterLesson.topic.toLowerCase()} today. Stop me any time — literally, just type.`,
     },
   ]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;
+
+  const sessionsQuery = useQuery({
+    queryKey: ["lesson-sessions"],
+    queryFn: () => listSessions({ data: undefined }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: (payload: {
+      id: string | null;
+      lesson: GeneratedLesson;
+      slideIndex: number;
+      notes: string;
+      messages: ChatMessage[];
+      quizAnswer: number | null;
+      completed: boolean;
+    }) =>
+      saveProgress({
+        data: {
+          id: payload.id,
+          topic: payload.lesson.topic,
+          subject: payload.lesson.subject,
+          lesson: payload.lesson as unknown as Record<string, unknown>,
+          slideIndex: payload.slideIndex,
+          notes: payload.notes,
+          messages: payload.messages,
+          quizAnswer: payload.quizAnswer,
+          completed: payload.completed,
+        },
+      }),
+    onSuccess: (res) => {
+      setSessionId(res.id);
+      setSavedAt(new Date());
+      void queryClient.invalidateQueries({ queryKey: ["lesson-sessions"] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeSession({ data: { id } }),
+    onSuccess: (_r, id) => {
+      if (id === sessionId) setSessionId(null);
+      void queryClient.invalidateQueries({ queryKey: ["lesson-sessions"] });
+    },
+    onError: () => toast.error("Couldn't remove that saved lesson."),
+  });
+
+  const persist = useCallback(
+    (overrides?: Partial<{ slideIndex: number; notes: string; messages: ChatMessage[]; quizAnswer: number | null }>) => {
+      saveMutation.mutate({
+        id: sessionId,
+        lesson,
+        slideIndex: overrides?.slideIndex ?? index,
+        notes: overrides?.notes ?? notes,
+        messages: overrides?.messages ?? messages,
+        quizAnswer: overrides?.quizAnswer ?? answer,
+        completed: (overrides?.slideIndex ?? index) === lesson.slides.length - 1,
+      });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionId, lesson, index, notes, messages, answer],
+  );
 
   const lessonMutation = useMutation({
     mutationFn: (t: string) => buildLesson({ data: { topic: t } }),
@@ -92,12 +168,24 @@ function Classroom() {
       setAnswer(null);
       setNotes("");
       setPlaying(true);
-      setMessages([
+      setSessionId(null);
+      setSavedAt(null);
+      const opening: ChatMessage[] = [
         {
           role: "tutor",
           text: `New lesson ready: ${next.topic}. I'll walk you through it slide by slide — interrupt whenever.`,
         },
-      ]);
+      ];
+      setMessages(opening);
+      saveMutation.mutate({
+        id: null,
+        lesson: next,
+        slideIndex: 0,
+        notes: "",
+        messages: opening,
+        quizAnswer: null,
+        completed: false,
+      });
     },
     onError: (error: Error) =>
       toast.error(error.message || "Couldn't build that lesson. Try rephrasing the topic."),
@@ -106,7 +194,13 @@ function Classroom() {
   const tutorMutation = useMutation({
     mutationFn: (question: string) =>
       askServer({ data: { topic: lesson.topic, slideTitle: slide.title, question } }),
-    onSuccess: (res) => setMessages((m) => [...m, { role: "tutor", text: res.answer }]),
+    onSuccess: (res) => {
+      setMessages((m) => {
+        const next: ChatMessage[] = [...m, { role: "tutor", text: res.answer }];
+        persist({ messages: next });
+        return next;
+      });
+    },
     onError: () =>
       setMessages((m) => [
         ...m,
@@ -123,6 +217,31 @@ function Classroom() {
     const t = setTimeout(() => setIndex((i) => Math.min(i + 1, lesson.slides.length - 1)), 12000);
     return () => clearTimeout(t);
   }, [playing, index, atEnd, lesson.slides.length]);
+
+  // Autosave slide position + notes (debounced) once the lesson is tracked.
+  useEffect(() => {
+    if (!sessionId) return;
+    const t = setTimeout(() => persist(), 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, index, notes, answer]);
+
+  const resume = (s: LessonSession) => {
+    setLesson(s.lesson);
+    setTopic(s.topic);
+    setIndex(Math.min(s.slideIndex, Math.max(0, s.lesson.slides.length - 1)));
+    setNotes(s.notes);
+    setMessages(
+      s.messages.length
+        ? s.messages
+        : [{ role: "tutor", text: `Back to ${s.topic}. Ask me anything.` }],
+    );
+    setAnswer(s.quizAnswer);
+    setSessionId(s.id);
+    setSavedAt(new Date(s.updatedAt));
+    setPlaying(false);
+    toast.success(`Resumed “${s.topic}” at slide ${Math.min(s.slideIndex, s.lesson.slides.length - 1) + 1}`);
+  };
 
   const teach = (t: string) => {
     const clean = t.trim();
@@ -142,6 +261,10 @@ function Classroom() {
     setPlaying(false);
     tutorMutation.mutate(q);
   };
+
+  const sessions = sessionsQuery.data ?? [];
+
+
 
   return (
     <AppShell>
@@ -189,6 +312,61 @@ function Classroom() {
           </div>
         </div>
 
+        {sessions.length > 0 && (
+          <div className="panel p-4 sm:p-5">
+            <p className="flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground">
+              <History className="size-3.5" /> Continue where you left off
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {sessions.map((s) => {
+                const total = s.lesson.slides?.length ?? 1;
+                const pct = Math.round(((s.slideIndex + 1) / total) * 100);
+                return (
+                  <div
+                    key={s.id}
+                    className={cn(
+                      "rounded-xl border bg-surface p-3",
+                      s.id === sessionId ? "border-primary/50" : "border-border",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium">{s.topic}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Slide {Math.min(s.slideIndex + 1, total)} of {total}
+                          {s.completed ? " · finished" : ""}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label={`Delete saved lesson ${s.topic}`}
+                        onClick={() => deleteMutation.mutate(s.id)}
+                        className="text-muted-foreground transition-colors hover:text-weak"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-border">
+                      <div className="h-full rounded-full bg-neural" style={{ width: `${pct}%` }} />
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 w-full"
+                      disabled={s.id === sessionId}
+                      onClick={() => resume(s)}
+                    >
+                      {s.id === sessionId ? "Current lesson" : "Resume"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+
+
         <div className="panel overflow-hidden">
           <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-4 py-3 sm:flex sm:justify-between sm:px-5">
             <div className="min-w-0">
@@ -199,9 +377,31 @@ function Classroom() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <span className="hidden items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted-foreground sm:flex">
-                <span className="size-1.5 animate-pulse rounded-full bg-mastered" />
-                Tutor online
+                {saveMutation.isPending ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin" /> Saving…
+                  </>
+                ) : savedAt ? (
+                  <>
+                    <Check className="size-3 text-mastered" /> Progress saved
+                  </>
+                ) : (
+                  <>
+                    <span className="size-1.5 animate-pulse rounded-full bg-mastered" />
+                    Tutor online
+                  </>
+                )}
               </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={saveMutation.isPending}
+                onClick={() => persist()}
+              >
+                <NotebookPen className="size-4" />
+                <span className="ml-1 hidden sm:inline">Save</span>
+              </Button>
+
               <Button size="sm" variant="outline" onClick={() => setPlaying((p) => !p)}>
                 {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
                 <span className="ml-1 hidden sm:inline">{playing ? "Pause" : "Resume"}</span>

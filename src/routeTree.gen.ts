@@ -15,6 +15,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GenomeRouteImport } from './routes/genome'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
+import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedReviseRouteImport } from './routes/_authenticated/revise'
+import { Route as AuthenticatedTestsRouteImport } from './routes/_authenticated/tests'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +50,31 @@ const AuthenticatedClassroomRoute = AuthenticatedClassroomRouteImport.update({
   path: '/classroom',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDoubtsRoute = AuthenticatedDoubtsRouteImport.update({
+  id: '/doubts',
+  path: '/doubts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReviseRoute = AuthenticatedReviseRouteImport.update({
+  id: '/revise',
+  path: '/revise',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTestsRoute = AuthenticatedTestsRouteImport.update({
+  id: '/tests',
+  path: '/tests',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -52,6 +82,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/classroom': typeof AuthenticatedClassroomRoute
+  '/doubts': typeof AuthenticatedDoubtsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/revise': typeof AuthenticatedReviseRoute
+  '/tests': typeof AuthenticatedTestsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +94,11 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/classroom': typeof AuthenticatedClassroomRoute
+  '/doubts': typeof AuthenticatedDoubtsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/revise': typeof AuthenticatedReviseRoute
+  '/tests': typeof AuthenticatedTestsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +108,37 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
+  '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/revise': typeof AuthenticatedReviseRoute
+  '/_authenticated/tests': typeof AuthenticatedTestsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/genome' | '/classroom'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/genome'
+    | '/classroom'
+    | '/doubts'
+    | '/onboarding'
+    | '/planner'
+    | '/revise'
+    | '/tests'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/genome' | '/classroom'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/genome'
+    | '/classroom'
+    | '/doubts'
+    | '/onboarding'
+    | '/planner'
+    | '/revise'
+    | '/tests'
   id:
     | '__root__'
     | '/'
@@ -82,6 +147,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/_authenticated/classroom'
+    | '/_authenticated/doubts'
+    | '/_authenticated/onboarding'
+    | '/_authenticated/planner'
+    | '/_authenticated/revise'
+    | '/_authenticated/tests'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,15 +206,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/doubts': {
+      id: '/_authenticated/doubts'
+      path: '/doubts'
+      fullPath: '/doubts'
+      preLoaderRoute: typeof AuthenticatedDoubtsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/revise': {
+      id: '/_authenticated/revise'
+      path: '/revise'
+      fullPath: '/revise'
+      preLoaderRoute: typeof AuthenticatedReviseRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tests': {
+      id: '/_authenticated/tests'
+      path: '/tests'
+      fullPath: '/tests'
+      preLoaderRoute: typeof AuthenticatedTestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedClassroomRoute: typeof AuthenticatedClassroomRoute
+  AuthenticatedDoubtsRoute: typeof AuthenticatedDoubtsRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedReviseRoute: typeof AuthenticatedReviseRoute
+  AuthenticatedTestsRoute: typeof AuthenticatedTestsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClassroomRoute: AuthenticatedClassroomRoute,
+  AuthenticatedDoubtsRoute: AuthenticatedDoubtsRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedReviseRoute: AuthenticatedReviseRoute,
+  AuthenticatedTestsRoute: AuthenticatedTestsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -160,13 +275,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -377,9 +377,31 @@ function Classroom() {
             </div>
             <div className="flex shrink-0 items-center gap-2">
               <span className="hidden items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-muted-foreground sm:flex">
-                <span className="size-1.5 animate-pulse rounded-full bg-mastered" />
-                Tutor online
+                {saveMutation.isPending ? (
+                  <>
+                    <Loader2 className="size-3 animate-spin" /> Saving…
+                  </>
+                ) : savedAt ? (
+                  <>
+                    <Check className="size-3 text-mastered" /> Progress saved
+                  </>
+                ) : (
+                  <>
+                    <span className="size-1.5 animate-pulse rounded-full bg-mastered" />
+                    Tutor online
+                  </>
+                )}
               </span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={saveMutation.isPending}
+                onClick={() => persist()}
+              >
+                <NotebookPen className="size-4" />
+                <span className="ml-1 hidden sm:inline">Save</span>
+              </Button>
+
               <Button size="sm" variant="outline" onClick={() => setPlaying((p) => !p)}>
                 {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
                 <span className="ml-1 hidden sm:inline">{playing ? "Pause" : "Resume"}</span>

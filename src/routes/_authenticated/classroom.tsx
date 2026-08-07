@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Mic,
+  MicOff,
   Send,
   Pause,
   Play,
@@ -18,6 +19,10 @@ import {
   History,
   Trash2,
   Check,
+  Hand,
+  Radio,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -32,7 +37,9 @@ import {
   type LessonSession,
 } from "@/lib/lesson-progress.functions";
 import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
+import { useLiveVoice } from "@/hooks/use-live-voice";
 import { cn } from "@/lib/utils";
+
 
 
 export const Route = createFileRoute("/_authenticated/classroom")({
@@ -95,7 +102,11 @@ function Classroom() {
   ]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [live, setLive] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { supported, speaking, listening, transcript, speak, stopSpeaking, listen, stopListening } =
+    useLiveVoice();
+
 
   const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;
@@ -200,6 +211,7 @@ function Classroom() {
         persist({ messages: next });
         return next;
       });
+      if (live) speak(res.answer, () => setPlaying(true));
     },
     onError: () =>
       setMessages((m) => [
@@ -212,15 +224,28 @@ function Classroom() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Silent auto-advance (reading mode only).
   useEffect(() => {
-    if (!playing || atEnd) return;
+    if (live || !playing || atEnd) return;
     const t = setTimeout(() => setIndex((i) => Math.min(i + 1, lesson.slides.length - 1)), 12000);
     return () => clearTimeout(t);
-  }, [playing, index, atEnd, lesson.slides.length]);
+  }, [live, playing, index, atEnd, lesson.slides.length]);
+
+  // Live mode: the tutor lectures the current slide aloud, then moves on.
+  useEffect(() => {
+    if (!live || !playing || listening || tutorMutation.isPending) return;
+    const script = `${slide.title}. ${slide.bullets.join(". ")}. ${slide.narration}`;
+    speak(script, () => {
+      if (!atEnd) setIndex((i) => Math.min(i + 1, lesson.slides.length - 1));
+    });
+    return () => stopSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, playing, index, lesson.topic, listening, tutorMutation.isPending]);
 
   // Autosave slide position + notes (debounced) once the lesson is tracked.
   useEffect(() => {
     if (!sessionId) return;
+
     const t = setTimeout(() => persist(), 1200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -253,16 +278,51 @@ function Classroom() {
     lessonMutation.mutate(clean);
   };
 
-  const ask = () => {
-    const q = input.trim();
-    if (!q || tutorMutation.isPending) return;
-    setInput("");
-    setMessages((m) => [...m, { role: "user", text: q }]);
+  const askQuestion = (q: string) => {
+    const clean = q.trim();
+    if (!clean || tutorMutation.isPending) return;
+    setMessages((m) => [...m, { role: "user", text: clean }]);
     setPlaying(false);
-    tutorMutation.mutate(q);
+    stopSpeaking();
+    tutorMutation.mutate(clean);
+  };
+
+  const ask = () => {
+    setInput("");
+    askQuestion(input);
+  };
+
+  const toggleLive = () => {
+    if (live) {
+      stopSpeaking();
+      stopListening();
+      setLive(false);
+      return;
+    }
+    if (!supported.speak) {
+      toast.error("This browser can't speak — try Chrome or Safari.");
+      return;
+    }
+    setLive(true);
+    setPlaying(true);
+    toast.success("Live class started — raise your hand any time to interrupt.");
+  };
+
+  const raiseHand = () => {
+    if (listening) {
+      stopListening();
+      return;
+    }
+    setPlaying(false);
+    stopSpeaking();
+    listen(
+      (spoken) => askQuestion(spoken),
+      (message) => toast.error(message),
+    );
   };
 
   const sessions = sessionsQuery.data ?? [];
+
 
 
 
@@ -402,10 +462,44 @@ function Classroom() {
                 <span className="ml-1 hidden sm:inline">Save</span>
               </Button>
 
-              <Button size="sm" variant="outline" onClick={() => setPlaying((p) => !p)}>
+              <Button
+                size="sm"
+                variant={live ? "default" : "outline"}
+                className={live ? "bg-neural" : ""}
+                onClick={toggleLive}
+                aria-pressed={live}
+              >
+                {live ? <Radio className="size-4" /> : <Volume2 className="size-4" />}
+                <span className="ml-1 hidden sm:inline">{live ? "Live class on" : "Go live"}</span>
+              </Button>
+
+              {live && (
+                <Button
+                  size="sm"
+                  variant={listening ? "default" : "outline"}
+                  className={listening ? "bg-weak" : ""}
+                  onClick={raiseHand}
+                  disabled={!supported.listen || tutorMutation.isPending}
+                >
+                  <Hand className="size-4" />
+                  <span className="ml-1 hidden sm:inline">
+                    {listening ? "Listening…" : "Raise hand"}
+                  </span>
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (playing) stopSpeaking();
+                  setPlaying((p) => !p);
+                }}
+              >
                 {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
                 <span className="ml-1 hidden sm:inline">{playing ? "Pause" : "Resume"}</span>
               </Button>
+
             </div>
           </header>
 
@@ -543,6 +637,27 @@ function Classroom() {
             <aside className="flex flex-col gap-4">
               <div className="flex min-h-[22rem] flex-col rounded-2xl border border-border bg-surface p-4">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Ask the tutor</p>
+                {live && (
+                  <div className="mt-2 flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs">
+                    {listening ? (
+                      <>
+                        <Hand className="size-3.5 shrink-0 animate-bounce text-accent" />
+                        <span className="truncate">{transcript || "Listening — ask your question…"}</span>
+                      </>
+                    ) : speaking ? (
+                      <>
+                        <Volume2 className="size-3.5 shrink-0 animate-pulse text-accent" />
+                        <span>Tutor is explaining aloud — raise your hand to interrupt.</span>
+                      </>
+                    ) : (
+                      <>
+                        <VolumeX className="size-3.5 shrink-0 text-muted-foreground" />
+                        <span>Live class paused.</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-3 flex-1 space-y-3 overflow-y-auto pr-1">
                   {messages.map((m, i) => (
                     <div key={i} className={cn("flex", m.role === "user" && "justify-end")}>
@@ -579,9 +694,17 @@ function Classroom() {
                     placeholder="I don't understand this…"
                     className="min-h-10 resize-none bg-background"
                   />
-                  <Button size="icon" variant="outline" aria-label="Voice mode">
-                    <Mic className="size-4" />
+                  <Button
+                    size="icon"
+                    variant={listening ? "default" : "outline"}
+                    aria-label={listening ? "Stop listening" : "Raise hand and ask verbally"}
+                    className={listening ? "bg-weak" : ""}
+                    onClick={raiseHand}
+                    disabled={!supported.listen || tutorMutation.isPending}
+                  >
+                    {listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
                   </Button>
+
                   <Button
                     size="icon"
                     className="bg-neural"

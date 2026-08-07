@@ -462,10 +462,44 @@ function Classroom() {
                 <span className="ml-1 hidden sm:inline">Save</span>
               </Button>
 
-              <Button size="sm" variant="outline" onClick={() => setPlaying((p) => !p)}>
+              <Button
+                size="sm"
+                variant={live ? "default" : "outline"}
+                className={live ? "bg-neural" : ""}
+                onClick={toggleLive}
+                aria-pressed={live}
+              >
+                {live ? <Radio className="size-4" /> : <Volume2 className="size-4" />}
+                <span className="ml-1 hidden sm:inline">{live ? "Live class on" : "Go live"}</span>
+              </Button>
+
+              {live && (
+                <Button
+                  size="sm"
+                  variant={listening ? "default" : "outline"}
+                  className={listening ? "bg-weak" : ""}
+                  onClick={raiseHand}
+                  disabled={!supported.listen || tutorMutation.isPending}
+                >
+                  <Hand className="size-4" />
+                  <span className="ml-1 hidden sm:inline">
+                    {listening ? "Listening…" : "Raise hand"}
+                  </span>
+                </Button>
+              )}
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  if (playing) stopSpeaking();
+                  setPlaying((p) => !p);
+                }}
+              >
                 {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
                 <span className="ml-1 hidden sm:inline">{playing ? "Pause" : "Resume"}</span>
               </Button>
+
             </div>
           </header>
 

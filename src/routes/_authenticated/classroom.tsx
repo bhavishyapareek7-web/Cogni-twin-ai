@@ -278,16 +278,51 @@ function Classroom() {
     lessonMutation.mutate(clean);
   };
 
-  const ask = () => {
-    const q = input.trim();
-    if (!q || tutorMutation.isPending) return;
-    setInput("");
-    setMessages((m) => [...m, { role: "user", text: q }]);
+  const askQuestion = (q: string) => {
+    const clean = q.trim();
+    if (!clean || tutorMutation.isPending) return;
+    setMessages((m) => [...m, { role: "user", text: clean }]);
     setPlaying(false);
-    tutorMutation.mutate(q);
+    stopSpeaking();
+    tutorMutation.mutate(clean);
+  };
+
+  const ask = () => {
+    setInput("");
+    askQuestion(input);
+  };
+
+  const toggleLive = () => {
+    if (live) {
+      stopSpeaking();
+      stopListening();
+      setLive(false);
+      return;
+    }
+    if (!supported.speak) {
+      toast.error("This browser can't speak — try Chrome or Safari.");
+      return;
+    }
+    setLive(true);
+    setPlaying(true);
+    toast.success("Live class started — raise your hand any time to interrupt.");
+  };
+
+  const raiseHand = () => {
+    if (listening) {
+      stopListening();
+      return;
+    }
+    setPlaying(false);
+    stopSpeaking();
+    listen(
+      (spoken) => askQuestion(spoken),
+      (message) => toast.error(message),
+    );
   };
 
   const sessions = sessionsQuery.data ?? [];
+
 
 
 

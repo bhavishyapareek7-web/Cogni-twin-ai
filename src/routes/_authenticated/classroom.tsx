@@ -211,6 +211,7 @@ function Classroom() {
         persist({ messages: next });
         return next;
       });
+      if (live) speak(res.answer, () => setPlaying(true));
     },
     onError: () =>
       setMessages((m) => [
@@ -223,14 +224,24 @@ function Classroom() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Silent auto-advance (reading mode only).
   useEffect(() => {
-    if (!playing || atEnd) return;
+    if (live || !playing || atEnd) return;
     const t = setTimeout(() => setIndex((i) => Math.min(i + 1, lesson.slides.length - 1)), 12000);
     return () => clearTimeout(t);
-  }, [playing, index, atEnd, lesson.slides.length]);
+  }, [live, playing, index, atEnd, lesson.slides.length]);
 
-  // Autosave slide position + notes (debounced) once the lesson is tracked.
+  // Live mode: the tutor lectures the current slide aloud, then moves on.
   useEffect(() => {
+    if (!live || !playing || listening || tutorMutation.isPending) return;
+    const script = `${slide.title}. ${slide.bullets.join(". ")}. ${slide.narration}`;
+    speak(script, () => {
+      if (!atEnd) setIndex((i) => Math.min(i + 1, lesson.slides.length - 1));
+    });
+    return () => stopSpeaking();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, playing, index, lesson.topic, listening, tutorMutation.isPending]);
+
     if (!sessionId) return;
     const t = setTimeout(() => persist(), 1200);
     return () => clearTimeout(t);

@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Mic,
+  MicOff,
   Send,
   Pause,
   Play,
@@ -18,6 +19,10 @@ import {
   History,
   Trash2,
   Check,
+  Hand,
+  Radio,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -32,7 +37,9 @@ import {
   type LessonSession,
 } from "@/lib/lesson-progress.functions";
 import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
+import { useLiveVoice } from "@/hooks/use-live-voice";
 import { cn } from "@/lib/utils";
+
 
 
 export const Route = createFileRoute("/_authenticated/classroom")({

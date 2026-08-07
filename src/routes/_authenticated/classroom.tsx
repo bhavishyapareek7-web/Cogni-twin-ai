@@ -242,7 +242,10 @@ function Classroom() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [live, playing, index, lesson.topic, listening, tutorMutation.isPending]);
 
+  // Autosave slide position + notes (debounced) once the lesson is tracked.
+  useEffect(() => {
     if (!sessionId) return;
+
     const t = setTimeout(() => persist(), 1200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -102,7 +102,11 @@ function Classroom() {
   ]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [live, setLive] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { supported, speaking, listening, transcript, speak, stopSpeaking, listen, stopListening } =
+    useLiveVoice();
+
 
   const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;

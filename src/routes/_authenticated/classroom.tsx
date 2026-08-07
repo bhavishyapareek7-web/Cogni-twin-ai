@@ -637,6 +637,27 @@ function Classroom() {
             <aside className="flex flex-col gap-4">
               <div className="flex min-h-[22rem] flex-col rounded-2xl border border-border bg-surface p-4">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">Ask the tutor</p>
+                {live && (
+                  <div className="mt-2 flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-3 py-2 text-xs">
+                    {listening ? (
+                      <>
+                        <Hand className="size-3.5 shrink-0 animate-bounce text-accent" />
+                        <span className="truncate">{transcript || "Listening — ask your question…"}</span>
+                      </>
+                    ) : speaking ? (
+                      <>
+                        <Volume2 className="size-3.5 shrink-0 animate-pulse text-accent" />
+                        <span>Tutor is explaining aloud — raise your hand to interrupt.</span>
+                      </>
+                    ) : (
+                      <>
+                        <VolumeX className="size-3.5 shrink-0 text-muted-foreground" />
+                        <span>Live class paused.</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 <div className="mt-3 flex-1 space-y-3 overflow-y-auto pr-1">
                   {messages.map((m, i) => (
                     <div key={i} className={cn("flex", m.role === "user" && "justify-end")}>

@@ -639,9 +639,17 @@ function Classroom() {
                     placeholder="I don't understand this…"
                     className="min-h-10 resize-none bg-background"
                   />
-                  <Button size="icon" variant="outline" aria-label="Voice mode">
-                    <Mic className="size-4" />
+                  <Button
+                    size="icon"
+                    variant={listening ? "default" : "outline"}
+                    aria-label={listening ? "Stop listening" : "Raise hand and ask verbally"}
+                    className={listening ? "bg-weak" : ""}
+                    onClick={raiseHand}
+                    disabled={!supported.listen || tutorMutation.isPending}
+                  >
+                    {listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
                   </Button>
+
                   <Button
                     size="icon"
                     className="bg-neural"

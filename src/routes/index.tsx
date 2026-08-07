@@ -149,6 +149,14 @@ function Landing() {
             <Link to="/dashboard">Meet your Twin</Link>
           </Button>
         </div>
+
+        <p className="mt-5 text-sm text-muted-foreground">
+          Preparing for JEE?{" "}
+          <Link to="/jee-mock-test" className="text-primary-glow underline underline-offset-4">
+            Try a free JEE Main mock test with rank prediction
+          </Link>
+        </p>
+
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-24 sm:px-6">

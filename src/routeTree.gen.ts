@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GenomeRouteImport } from './routes/genome'
+import { Route as JeeMockTestRouteImport } from './routes/jee-mock-test'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
 import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -43,6 +44,11 @@ const DashboardRoute = DashboardRouteImport.update({
 const GenomeRoute = GenomeRouteImport.update({
   id: '/genome',
   path: '/genome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JeeMockTestRoute = JeeMockTestRouteImport.update({
+  id: '/jee-mock-test',
+  path: '/jee-mock-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedClassroomRoute = AuthenticatedClassroomRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
+  '/jee-mock-test': typeof JeeMockTestRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
+  '/jee-mock-test': typeof JeeMockTestRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
+  '/jee-mock-test': typeof JeeMockTestRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
   '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/genome'
+    | '/jee-mock-test'
     | '/classroom'
     | '/doubts'
     | '/onboarding'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/genome'
+    | '/jee-mock-test'
     | '/classroom'
     | '/doubts'
     | '/onboarding'
@@ -146,6 +157,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/genome'
+    | '/jee-mock-test'
     | '/_authenticated/classroom'
     | '/_authenticated/doubts'
     | '/_authenticated/onboarding'
@@ -160,6 +172,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   GenomeRoute: typeof GenomeRoute
+  JeeMockTestRoute: typeof JeeMockTestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -197,6 +210,13 @@ declare module '@tanstack/react-router' {
       path: '/genome'
       fullPath: '/genome'
       preLoaderRoute: typeof GenomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jee-mock-test': {
+      id: '/jee-mock-test'
+      path: '/jee-mock-test'
+      fullPath: '/jee-mock-test'
+      preLoaderRoute: typeof JeeMockTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/classroom': {
@@ -271,7 +291,18 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   GenomeRoute: GenomeRoute,
+  JeeMockTestRoute: JeeMockTestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

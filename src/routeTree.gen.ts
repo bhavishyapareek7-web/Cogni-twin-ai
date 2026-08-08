@@ -19,6 +19,7 @@ import { Route as AuthenticatedClassroomRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
 import { Route as AuthenticatedReviseRouteImport } from './routes/_authenticated/revise'
 import { Route as AuthenticatedTestsRouteImport } from './routes/_authenticated/tests'
 
@@ -71,6 +72,11 @@ const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPremiumRoute = AuthenticatedPremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReviseRoute = AuthenticatedReviseRouteImport.update({
   id: '/revise',
   path: '/revise',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/premium': typeof AuthenticatedPremiumRoute
   '/revise': typeof AuthenticatedReviseRoute
   '/tests': typeof AuthenticatedTestsRoute
 }
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/planner': typeof AuthenticatedPlannerRoute
+  '/premium': typeof AuthenticatedPremiumRoute
   '/revise': typeof AuthenticatedReviseRoute
   '/tests': typeof AuthenticatedTestsRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/revise': typeof AuthenticatedReviseRoute
   '/_authenticated/tests': typeof AuthenticatedTestsRoute
 }
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/doubts'
     | '/onboarding'
     | '/planner'
+    | '/premium'
     | '/revise'
     | '/tests'
   fileRoutesByTo: FileRoutesByTo
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/doubts'
     | '/onboarding'
     | '/planner'
+    | '/premium'
     | '/revise'
     | '/tests'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/doubts'
     | '/_authenticated/onboarding'
     | '/_authenticated/planner'
+    | '/_authenticated/premium'
     | '/_authenticated/revise'
     | '/_authenticated/tests'
   fileRoutesById: FileRoutesById
@@ -247,6 +259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlannerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/premium': {
+      id: '/_authenticated/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof AuthenticatedPremiumRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/revise': {
       id: '/_authenticated/revise'
       path: '/revise'
@@ -269,6 +288,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDoubtsRoute: typeof AuthenticatedDoubtsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
   AuthenticatedReviseRoute: typeof AuthenticatedReviseRoute
   AuthenticatedTestsRoute: typeof AuthenticatedTestsRoute
 }
@@ -278,6 +298,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDoubtsRoute: AuthenticatedDoubtsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedReviseRoute: AuthenticatedReviseRoute,
   AuthenticatedTestsRoute: AuthenticatedTestsRoute,
 }

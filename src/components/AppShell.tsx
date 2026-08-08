@@ -94,6 +94,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
+              {access?.isAdmin && (
+                <Link
+                  to="/admin"
+                  className={cn(
+                    "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors",
+                    pathname === "/admin"
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                  )}
+                >
+                  <ShieldCheck className="size-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+              )}
             </nav>
             {isLoading ? (
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
@@ -117,6 +131,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main>{children}</main>
+      <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
+        made with <span className="text-destructive">❤</span> by bhavishya
+      </footer>
+
     </div>
   );
 }

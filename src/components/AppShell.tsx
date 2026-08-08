@@ -11,11 +11,15 @@ import {
   Layers,
   Target,
   CalendarDays,
+  Crown,
+  ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +31,9 @@ const nav = [
   { to: "/revise", label: "Revise", icon: Layers },
   { to: "/tests", label: "Tests", icon: Target },
   { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/premium", label: "Premium", icon: Crown },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

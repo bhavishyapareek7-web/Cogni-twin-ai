@@ -46,6 +46,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     staleTime: 30_000,
   });
 
+  const loadAccess = useServerFn(getAccess);
+  const { data: access } = useQuery({
+    queryKey: ["access"],
+    queryFn: () => loadAccess({}),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
+
   const signOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();

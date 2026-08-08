@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GenomeRouteImport } from './routes/genome'
 import { Route as JeeMockTestRouteImport } from './routes/jee-mock-test'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
 import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -51,6 +52,11 @@ const JeeMockTestRoute = JeeMockTestRouteImport.update({
   id: '/jee-mock-test',
   path: '/jee-mock-test',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedClassroomRoute = AuthenticatedClassroomRouteImport.update({
   id: '/classroom',
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
   '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/admin'
     | '/classroom'
     | '/doubts'
     | '/onboarding'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/admin'
     | '/classroom'
     | '/doubts'
     | '/onboarding'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/_authenticated/admin'
     | '/_authenticated/classroom'
     | '/_authenticated/doubts'
     | '/_authenticated/onboarding'
@@ -231,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JeeMockTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/classroom': {
       id: '/_authenticated/classroom'
       path: '/classroom'
@@ -284,6 +303,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedClassroomRoute: typeof AuthenticatedClassroomRoute
   AuthenticatedDoubtsRoute: typeof AuthenticatedDoubtsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -294,6 +314,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedClassroomRoute: AuthenticatedClassroomRoute,
   AuthenticatedDoubtsRoute: AuthenticatedDoubtsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

@@ -11,11 +11,15 @@ import {
   Layers,
   Target,
   CalendarDays,
+  Crown,
+  ShieldCheck,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +31,9 @@ const nav = [
   { to: "/revise", label: "Revise", icon: Layers },
   { to: "/tests", label: "Tests", icon: Target },
   { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/premium", label: "Premium", icon: Crown },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -39,6 +45,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     queryFn: async () => (await supabase.auth.getUser()).data.user,
     staleTime: 30_000,
   });
+
+  const loadAccess = useServerFn(getAccess);
+  const { data: access } = useQuery({
+    queryKey: ["access"],
+    queryFn: () => loadAccess({}),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -79,6 +94,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </Link>
                 );
               })}
+              {access?.isAdmin && (
+                <Link
+                  to="/admin"
+                  className={cn(
+                    "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition-colors",
+                    pathname === "/admin"
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                  )}
+                >
+                  <ShieldCheck className="size-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Link>
+              )}
             </nav>
             {isLoading ? (
               <Loader2 className="size-4 animate-spin text-muted-foreground" />
@@ -102,6 +131,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main>{children}</main>
+      <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
+        made with <span className="text-destructive">❤</span> by bhavishya
+      </footer>
+
     </div>
   );
 }

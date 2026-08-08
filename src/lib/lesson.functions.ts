@@ -56,17 +56,34 @@ export const generateLesson = createServerFn({ method: "POST" })
   .inputValidator((input: { topic: string }) =>
     z.object({ topic: z.string().trim().min(2).max(120) }).parse(input),
   )
-  .handler(async ({ data }): Promise<GeneratedLesson> => {
+  .handler(async ({ data, context }): Promise<GeneratedLesson> => {
+    const [{ getAccessSnapshot }, profileRes] = await Promise.all([
+      import("@/lib/access.server"),
+      context.supabase
+        .from("profiles")
+        .select("grade, board, target_exams, weak_subjects, explanation_style, language")
+        .eq("id", context.userId)
+        .maybeSingle(),
+    ]);
+    const access = await getAccessSnapshot(context.supabase, context.userId);
+    const p = profileRes.data;
+    const personalization =
+      access.premium && p
+        ? `Personalize for this learner — grade ${p.grade ?? "unspecified"} (${p.board ?? "board unspecified"}), target exams: ${(p.target_exams ?? []).join(", ") || "none"}, weak areas: ${(p.weak_subjects ?? []).join(", ") || "none"}, preferred explanation style: ${p.explanation_style ?? "balanced"}, language: ${p.language ?? "English"}. Produce 6 slides with exam-relevant depth and pre-empt the mistakes this learner tends to make.`
+        : "Produce 4 slides at a general level.";
+
     const raw = await callGateway([
       {
         role: "system",
         content:
-          "You are a world-class teacher building an immersive slide lecture. Reply with JSON only, no prose, matching exactly: {\"topic\":string,\"subject\":string,\"slides\":[{\"title\":string,\"bullets\":[string,string,string],\"visual\":string,\"narration\":string}],\"quiz\":{\"question\":string,\"options\":[string,string,string,string],\"answerIndex\":number,\"explanation\":string}}. Produce 4 slides. 'visual' is a very short caption for a diagram (max 6 words). 'narration' is one or two spoken sentences with a vivid analogy. Build slides in prerequisite order.",
+          "You are a world-class teacher building an immersive slide lecture. Reply with JSON only, no prose, matching exactly: {\"topic\":string,\"subject\":string,\"slides\":[{\"title\":string,\"bullets\":[string,string,string],\"visual\":string,\"narration\":string}],\"quiz\":{\"question\":string,\"options\":[string,string,string,string],\"answerIndex\":number,\"explanation\":string}}. 'visual' is a very short caption for a diagram (max 6 words). 'narration' is one or two spoken sentences with a vivid analogy. Build slides in prerequisite order. " +
+          personalization,
       },
       { role: "user", content: `Teach me: ${data.topic}` },
     ]);
     return lessonSchema.parse(parseJson(raw));
   });
+
 
 export const askTutor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

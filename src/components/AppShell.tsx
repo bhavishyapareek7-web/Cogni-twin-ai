@@ -13,6 +13,8 @@ import {
   CalendarDays,
   Crown,
   ShieldCheck,
+  BookOpen,
+  BarChart3,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -31,6 +33,8 @@ const nav = [
   { to: "/revise", label: "Revise", icon: Layers },
   { to: "/tests", label: "Tests", icon: Target },
   { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/companion", label: "Book", icon: BookOpen },
+  { to: "/insights", label: "Insights", icon: BarChart3 },
   { to: "/premium", label: "Premium", icon: Crown },
 ] as const;
 

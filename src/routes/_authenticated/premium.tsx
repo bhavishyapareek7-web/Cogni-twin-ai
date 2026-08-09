@@ -67,6 +67,10 @@ const LINKS: Record<string, string> = {
   premium_memory_engine: "/revise",
   premium_autopilot: "/planner",
   premium_mistake_lab: "/doubts",
+  premium_exam_strategy: "/planner",
+  premium_voice_tutor: "/classroom",
+  premium_ai_pdf: "/companion",
+  premium_analytics: "/insights",
 };
 
 const BENEFITS = [

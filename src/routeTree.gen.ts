@@ -17,7 +17,9 @@ import { Route as GenomeRouteImport } from './routes/genome'
 import { Route as JeeMockTestRouteImport } from './routes/jee-mock-test'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
+import { Route as AuthenticatedCompanionRouteImport } from './routes/_authenticated/companion'
 import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
+import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
@@ -63,9 +65,19 @@ const AuthenticatedClassroomRoute = AuthenticatedClassroomRouteImport.update({
   path: '/classroom',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCompanionRoute = AuthenticatedCompanionRouteImport.update({
+  id: '/companion',
+  path: '/companion',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDoubtsRoute = AuthenticatedDoubtsRouteImport.update({
   id: '/doubts',
   path: '/doubts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInsightsRoute = AuthenticatedInsightsRouteImport.update({
+  id: '/insights',
+  path: '/insights',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -102,7 +114,9 @@ export interface FileRoutesByFullPath {
   '/jee-mock-test': typeof JeeMockTestRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
+  '/companion': typeof AuthenticatedCompanionRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
+  '/insights': typeof AuthenticatedInsightsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/premium': typeof AuthenticatedPremiumRoute
@@ -117,7 +131,9 @@ export interface FileRoutesByTo {
   '/jee-mock-test': typeof JeeMockTestRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
+  '/companion': typeof AuthenticatedCompanionRoute
   '/doubts': typeof AuthenticatedDoubtsRoute
+  '/insights': typeof AuthenticatedInsightsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/premium': typeof AuthenticatedPremiumRoute
@@ -134,7 +150,9 @@ export interface FileRoutesById {
   '/jee-mock-test': typeof JeeMockTestRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
+  '/_authenticated/companion': typeof AuthenticatedCompanionRoute
   '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
+  '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
@@ -151,7 +169,9 @@ export interface FileRouteTypes {
     | '/jee-mock-test'
     | '/admin'
     | '/classroom'
+    | '/companion'
     | '/doubts'
+    | '/insights'
     | '/onboarding'
     | '/planner'
     | '/premium'
@@ -166,7 +186,9 @@ export interface FileRouteTypes {
     | '/jee-mock-test'
     | '/admin'
     | '/classroom'
+    | '/companion'
     | '/doubts'
+    | '/insights'
     | '/onboarding'
     | '/planner'
     | '/premium'
@@ -182,7 +204,9 @@ export interface FileRouteTypes {
     | '/jee-mock-test'
     | '/_authenticated/admin'
     | '/_authenticated/classroom'
+    | '/_authenticated/companion'
     | '/_authenticated/doubts'
+    | '/_authenticated/insights'
     | '/_authenticated/onboarding'
     | '/_authenticated/planner'
     | '/_authenticated/premium'
@@ -257,11 +281,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClassroomRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/companion': {
+      id: '/_authenticated/companion'
+      path: '/companion'
+      fullPath: '/companion'
+      preLoaderRoute: typeof AuthenticatedCompanionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/doubts': {
       id: '/_authenticated/doubts'
       path: '/doubts'
       fullPath: '/doubts'
       preLoaderRoute: typeof AuthenticatedDoubtsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/insights': {
+      id: '/_authenticated/insights'
+      path: '/insights'
+      fullPath: '/insights'
+      preLoaderRoute: typeof AuthenticatedInsightsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -305,7 +343,9 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedClassroomRoute: typeof AuthenticatedClassroomRoute
+  AuthenticatedCompanionRoute: typeof AuthenticatedCompanionRoute
   AuthenticatedDoubtsRoute: typeof AuthenticatedDoubtsRoute
+  AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
@@ -316,7 +356,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedClassroomRoute: AuthenticatedClassroomRoute,
+  AuthenticatedCompanionRoute: AuthenticatedCompanionRoute,
   AuthenticatedDoubtsRoute: AuthenticatedDoubtsRoute,
+  AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
@@ -338,13 +380,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

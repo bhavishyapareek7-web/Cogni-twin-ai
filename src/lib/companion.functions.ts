@@ -48,11 +48,6 @@ ${data.source.slice(0, 60_000)}`,
       { role: "user", content: data.question },
     ]);
 
-    await supabase.from("ai_usage").upsert(
-      { user_id: userId, kind: "book_companion", amount: 1 },
-      { onConflict: "user_id,kind,period", ignoreDuplicates: false },
-    );
-
     return { answer };
   });
 

@@ -95,7 +95,11 @@ function AdminPage() {
 
   const claimMutation = useMutation({
     mutationFn: () => claim({}),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      if (!res.ok) {
+        toast.error(res.reason ?? "Could not claim Super Admin.");
+        return;
+      }
       toast.success("You are now Super Admin.");
       void qc.invalidateQueries({ queryKey: ["access"] });
     },

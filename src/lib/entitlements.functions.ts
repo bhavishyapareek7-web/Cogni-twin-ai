@@ -39,16 +39,18 @@ export const claimSuperAdmin = createServerFn({ method: "POST" })
     const { count } = await supabaseAdmin
       .from("user_roles")
       .select("id", { count: "exact", head: true });
-    if ((count ?? 0) > 0) throw new Error("An administrator already exists.");
+    if ((count ?? 0) > 0) {
+      return { ok: false as const, reason: "An administrator already exists." };
+    }
     const { error } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: context.userId, role: "super_admin" });
-    if (error) throw new Error(error.message);
+    if (error) return { ok: false as const, reason: error.message };
     await supabaseAdmin.from("audit_logs").insert({
       admin_id: context.userId,
       action: "bootstrap_super_admin",
       target_user_id: context.userId,
       metadata: {},
     });
-    return { ok: true as const };
+    return { ok: true as const, reason: null };
   });

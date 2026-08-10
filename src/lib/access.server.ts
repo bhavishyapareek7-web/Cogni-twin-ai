@@ -17,7 +17,12 @@ export type AccessSnapshot = {
 /** Server-side truth for what a learner can access. Never trust the client for this. */
 export async function getAccessSnapshot(supabase: Client, userId: string): Promise<AccessSnapshot> {
   const [premiumRes, subRes, rolesRes, featuresRes, flagsRes, entRes, usageRes] = await Promise.all([
-    supabase.rpc("is_premium", { _user_id: userId }),
+    supabase
+      .from("subscriptions")
+      .select("plan, status, expires_at")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .neq("plan", "free"),
     supabase
       .from("subscriptions")
       .select("plan, status, expires_at")
@@ -33,7 +38,10 @@ export async function getAccessSnapshot(supabase: Client, userId: string): Promi
     supabase.from("ai_usage").select("kind, amount").eq("user_id", userId),
   ]);
 
-  const premium = premiumRes.data === true;
+  const premium = (premiumRes.data ?? []).some(
+    (s) => !s.expires_at || new Date(s.expires_at).getTime() > Date.now(),
+  );
+
   const flags = new Map((flagsRes.data ?? []).map((f) => [f.feature, f.enabled]));
   const now = Date.now();
   const grants = new Set(

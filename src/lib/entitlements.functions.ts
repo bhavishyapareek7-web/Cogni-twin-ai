@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getAccessSnapshot, requireFeature } from "@/lib/access.server";
+import { getAccessSnapshot } from "@/lib/access.server";
 
 /** Server-side entitlement snapshot for the signed-in learner. */
 export const getAccess = createServerFn({ method: "GET" })

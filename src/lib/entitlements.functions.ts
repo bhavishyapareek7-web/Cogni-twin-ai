@@ -1,23 +1,32 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getAccessSnapshot, requireFeature } from "@/lib/access.server";
+import { getAccessSnapshot } from "@/lib/access.server";
 
 /** Server-side entitlement snapshot for the signed-in learner. */
 export const getAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => getAccessSnapshot(context.supabase, context.userId));
 
-/** Gate used before entering any Premium surface. Authoritative, server-side. */
+/**
+ * Non-throwing entitlement check used by the Premium hub UI.
+ * Real enforcement still happens inside each Premium server function.
+ */
 export const openFeature = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { feature: string }) =>
     z.object({ feature: z.string().trim().min(3).max(64) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await requireFeature(context.supabase, context.userId, data.feature);
-    return { allowed: true as const, feature: data.feature };
+    const access = await getAccessSnapshot(context.supabase, context.userId);
+    const allowed = access.features.some((f) => f.id === data.feature && f.enabled);
+    return {
+      allowed,
+      feature: data.feature,
+      reason: allowed ? null : "This is a Premium feature. Ask an administrator to unlock it.",
+    };
   });
+
 
 /**
  * One-time bootstrap: the very first signed-in user can claim Super Admin,

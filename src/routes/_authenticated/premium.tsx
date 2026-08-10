@@ -91,6 +91,10 @@ function PremiumHub() {
 
   const check = useMutation({
     mutationFn: (feature: string) => open({ data: { feature } }),
+    onSuccess: (res) => {
+      if (res.allowed) toast.success("Access verified — this feature is unlocked.");
+      else toast.info(res.reason ?? "This is a Premium feature.");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 

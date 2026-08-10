@@ -26,17 +26,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/dashboard", label: "Twin", icon: LayoutDashboard },
-  { to: "/genome", label: "Knowledge DNA", icon: Dna },
-  { to: "/classroom", label: "Classroom", icon: Presentation },
-  { to: "/doubts", label: "Doubts", icon: Lightbulb },
-  { to: "/revise", label: "Revise", icon: Layers },
-  { to: "/tests", label: "Tests", icon: Target },
-  { to: "/planner", label: "Planner", icon: CalendarDays },
-  { to: "/companion", label: "Book", icon: BookOpen },
-  { to: "/insights", label: "Insights", icon: BarChart3 },
-  { to: "/premium", label: "Premium", icon: Crown },
+  { to: "/dashboard", label: "Twin", icon: LayoutDashboard, premium: false },
+  { to: "/genome", label: "Knowledge DNA", icon: Dna, premium: false },
+  { to: "/classroom", label: "Classroom", icon: Presentation, premium: false },
+  { to: "/doubts", label: "Doubts", icon: Lightbulb, premium: false },
+  { to: "/revise", label: "Revise", icon: Layers, premium: false },
+  { to: "/tests", label: "Tests", icon: Target, premium: false },
+  { to: "/planner", label: "Planner", icon: CalendarDays, premium: false },
+  { to: "/companion", label: "Book", icon: BookOpen, premium: true },
+  { to: "/insights", label: "Insights", icon: BarChart3, premium: true },
+  { to: "/premium", label: "Premium", icon: Crown, premium: false },
 ] as const;
+
 
 
 export function AppShell({ children }: { children: ReactNode }) {

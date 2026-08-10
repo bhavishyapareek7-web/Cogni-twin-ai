@@ -88,8 +88,9 @@ export async function requireAdminRole(
   userId: string,
   allowed: Array<Database["public"]["Enums"]["app_role"]> = ["super_admin", "admin"],
 ) {
-  const checks = await Promise.all(
-    allowed.map((role) => supabase.rpc("has_role", { _user_id: userId, _role: role })),
-  );
-  if (!checks.some((c) => c.data === true)) throw new Error("Administrator access required.");
+  // Reads the caller's own role rows (RLS-scoped to auth.uid()); no SECURITY DEFINER needed.
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  const held = new Set((data ?? []).map((r) => r.role));
+  if (!allowed.some((role) => held.has(role))) throw new Error("Administrator access required.");
 }
+

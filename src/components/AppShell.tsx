@@ -82,6 +82,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex shrink-0 items-center gap-2">
             <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">
               {nav.map((item) => {
+                if (item.premium && !(access?.premium || access?.isAdmin)) return null;
                 const active = pathname === item.to;
                 return (
                   <Link

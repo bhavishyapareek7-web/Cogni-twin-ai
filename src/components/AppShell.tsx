@@ -78,9 +78,14 @@ export function AppShell({ children }: { children: ReactNode }) {
               alt="EduTwin AI"
               className="size-9 shrink-0 rounded-xl object-contain"
             />
-            <span className="truncate text-lg font-semibold tracking-tight">
-              Edu<span className="text-gradient">Twin</span> AI
-            </span>
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-lg font-semibold tracking-tight leading-none">
+                Edu<span className="text-gradient">Twin</span> AI
+              </span>
+              <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
+                Learning That Learns You
+              </span>
+            </div>
           </Link>
           <div className="flex shrink-0 items-center gap-2">
             <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">

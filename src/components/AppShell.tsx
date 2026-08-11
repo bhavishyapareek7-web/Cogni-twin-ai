@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Brain,
   LayoutDashboard,
   Presentation,
   Dna,
@@ -24,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/edutwin-logo.png.asset.json";
+
 
 const nav = [
   { to: "/dashboard", label: "Twin", icon: LayoutDashboard, premium: false },

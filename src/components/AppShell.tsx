@@ -24,6 +24,7 @@ import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/edutwin-logo.png.asset.json";
+import signedInLogoAsset from "@/assets/edutwin-logo-signed-in.png.asset.json";
 
 
 const nav = [

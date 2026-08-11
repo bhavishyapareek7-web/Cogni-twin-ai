@@ -1,7 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Brain,
   LayoutDashboard,
   Presentation,
   Dna,
@@ -24,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/edutwin-logo.png.asset.json";
+
 
 const nav = [
   { to: "/dashboard", label: "Twin", icon: LayoutDashboard, premium: false },
@@ -72,9 +73,11 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 sm:flex sm:justify-between sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-neural glow">
-              <Brain className="size-5 text-primary-foreground" />
-            </span>
+            <img
+              src={logoAsset.url}
+              alt="EduTwin AI"
+              className="size-9 shrink-0 rounded-xl object-contain"
+            />
             <span className="truncate text-lg font-semibold tracking-tight">
               Edu<span className="text-gradient">Twin</span> AI
             </span>

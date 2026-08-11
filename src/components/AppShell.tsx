@@ -24,6 +24,7 @@ import { getAccess } from "@/lib/entitlements.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/edutwin-logo.png.asset.json";
+import signedInLogoAsset from "@/assets/edutwin-logo-signed-in.png.asset.json";
 
 
 const nav = [
@@ -73,19 +74,29 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 sm:flex sm:justify-between sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-2.5">
-            <img
-              src={logoAsset.url}
-              alt="EduTwin AI"
-              className="size-9 shrink-0 rounded-xl object-contain"
-            />
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate text-lg font-semibold tracking-tight leading-none">
-                Edu<span className="text-gradient">Twin</span> AI
-              </span>
-              <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
-                Learning That Learns You
-              </span>
-            </div>
+            {user ? (
+              <img
+                src={signedInLogoAsset.url}
+                alt="EduTwin AI"
+                className="h-10 w-auto shrink-0 rounded-lg object-contain"
+              />
+            ) : (
+              <>
+                <img
+                  src={logoAsset.url}
+                  alt="EduTwin AI"
+                  className="size-9 shrink-0 rounded-xl object-contain"
+                />
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-lg font-semibold tracking-tight leading-none">
+                    Edu<span className="text-gradient">Twin</span> AI
+                  </span>
+                  <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
+                    Learning That Learns You
+                  </span>
+                </div>
+              </>
+            )}
           </Link>
           <div className="flex shrink-0 items-center gap-2">
             <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">

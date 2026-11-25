@@ -112,6 +112,42 @@ export type Database = {
           },
         ]
       }
+      family_links: {
+        Row: {
+          created_at: string
+          id: string
+          parent_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_links_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_links_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_flags: {
         Row: {
           created_at: string
@@ -339,6 +375,45 @@ export type Database = {
         }
         Relationships: []
       }
+      org_members: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          member_role: string
+          org_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          member_role?: string
+          org_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          member_role?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           created_at: string
@@ -365,6 +440,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      point_ledger: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          note: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string
+          points: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          note?: string
+          points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -444,6 +554,72 @@ export type Database = {
           updated_at?: string
           weak_subjects?: string[]
           xp?: number
+        }
+        Relationships: []
+      }
+      redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          points_spent: number
+          reward_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_spent: number
+          reward_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          cost: number
+          created_at: string
+          description: string
+          id: string
+          name: string
+          status: string
+        }
+        Insert: {
+          cost: number
+          created_at?: string
+          description?: string
+          id: string
+          name: string
+          status?: string
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          status?: string
         }
         Relationships: []
       }
@@ -597,7 +773,14 @@ export type Database = {
       is_premium: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "super_admin" | "admin" | "content_admin" | "support_admin"
+      app_role:
+        | "super_admin"
+        | "admin"
+        | "content_admin"
+        | "support_admin"
+        | "teacher"
+        | "parent"
+        | "org_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -725,7 +908,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "admin", "content_admin", "support_admin"],
+      app_role: [
+        "super_admin",
+        "admin",
+        "content_admin",
+        "support_admin",
+        "teacher",
+        "parent",
+        "org_admin",
+      ],
     },
   },
 } as const

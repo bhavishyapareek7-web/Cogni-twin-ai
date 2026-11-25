@@ -37,8 +37,39 @@ import {
   type LessonSession,
 } from "@/lib/lesson-progress.functions";
 import { lesson as fallbackLesson, lessonQuiz } from "@/lib/twin-data";
+import { awardStudyPoints } from "@/lib/points.functions";
 import { useLiveVoice } from "@/hooks/use-live-voice";
 import { cn } from "@/lib/utils";
+
+function AIAvatar({ speaking, listening }: { speaking: boolean; listening: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          "relative grid size-14 place-items-center rounded-full border border-border bg-neural glow",
+          listening && "animate-pulse ring-2 ring-accent",
+        )}
+      >
+        <div className="flex gap-1.5">
+          <span className="size-2 rounded-full bg-primary-foreground" />
+          <span className="size-2 rounded-full bg-primary-foreground" />
+        </div>
+        <span
+          className={cn(
+            "absolute bottom-3.5 h-0.5 w-5 rounded-full bg-primary-foreground transition-all",
+            speaking && "h-1.5 animate-pulse",
+          )}
+        />
+      </div>
+      <div className="text-xs">
+        <p className="font-medium text-foreground">Professor Twin</p>
+        <p className="text-muted-foreground">
+          {listening ? "Listening to you…" : speaking ? "Explaining…" : "Ready — raise your hand"}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 
 
@@ -110,6 +141,20 @@ function Classroom() {
 
   const slide = lesson.slides[index]!;
   const atEnd = index === lesson.slides.length - 1;
+
+  const awardPoints = useServerFn(awardStudyPoints);
+  const awardedRef = useRef(false);
+  useEffect(() => {
+    if (atEnd && !awardedRef.current) {
+      awardedRef.current = true;
+      void awardPoints({
+        data: { minutes: 15, note: `Finished lesson: ${lesson.topic}` },
+      }).then((res) => {
+        if (res.ok) toast.success(`+${res.awarded} study points earned`);
+      });
+    }
+    if (!atEnd) awardedRef.current = false;
+  }, [atEnd, awardPoints, lesson.topic]);
 
   const sessionsQuery = useQuery({
     queryKey: ["lesson-sessions"],
@@ -505,7 +550,18 @@ function Classroom() {
 
           <div className="grid gap-4 p-4 lg:grid-cols-[1.7fr_1fr] lg:p-5">
             <div className="space-y-4">
-              <div className="relative rounded-2xl border border-border bg-surface p-5">
+              <div className="relative overflow-hidden rounded-2xl border border-border bg-surface p-5">
+                {live && (
+                  <div className="pointer-events-none absolute inset-0 bg-neural opacity-10 animate-pulse" />
+                )}
+                {live && (
+                  <div className="relative mb-4 flex items-center justify-between">
+                    <AIAvatar speaking={speaking} listening={listening} />
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-accent">
+                      <span className="size-1.5 animate-pulse rounded-full bg-accent" /> LIVE
+                    </span>
+                  </div>
+                )}
                 {lessonMutation.isPending && (
                   <div className="absolute inset-0 z-10 grid place-items-center rounded-2xl bg-background/70 backdrop-blur-sm">
                     <div className="text-center">

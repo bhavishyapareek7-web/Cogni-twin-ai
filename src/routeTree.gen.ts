@@ -21,10 +21,14 @@ import { Route as AuthenticatedCompanionRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDoubtsRouteImport } from './routes/_authenticated/doubts'
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedPremiumRouteImport } from './routes/_authenticated/premium'
 import { Route as AuthenticatedReviseRouteImport } from './routes/_authenticated/revise'
+import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
+import { Route as AuthenticatedTeacherRouteImport } from './routes/_authenticated/teacher'
 import { Route as AuthenticatedTestsRouteImport } from './routes/_authenticated/tests'
+import { Route as AuthenticatedWellbeingRouteImport } from './routes/_authenticated/wellbeing'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -85,6 +89,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
@@ -100,9 +109,24 @@ const AuthenticatedReviseRoute = AuthenticatedReviseRouteImport.update({
   path: '/revise',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTeacherRoute = AuthenticatedTeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTestsRoute = AuthenticatedTestsRouteImport.update({
   id: '/tests',
   path: '/tests',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWellbeingRoute = AuthenticatedWellbeingRouteImport.update({
+  id: '/wellbeing',
+  path: '/wellbeing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
@@ -118,10 +142,14 @@ export interface FileRoutesByFullPath {
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/insights': typeof AuthenticatedInsightsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parent': typeof AuthenticatedParentRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/revise': typeof AuthenticatedReviseRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
+  '/teacher': typeof AuthenticatedTeacherRoute
   '/tests': typeof AuthenticatedTestsRoute
+  '/wellbeing': typeof AuthenticatedWellbeingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -135,10 +163,14 @@ export interface FileRoutesByTo {
   '/doubts': typeof AuthenticatedDoubtsRoute
   '/insights': typeof AuthenticatedInsightsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/parent': typeof AuthenticatedParentRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/premium': typeof AuthenticatedPremiumRoute
   '/revise': typeof AuthenticatedReviseRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
+  '/teacher': typeof AuthenticatedTeacherRoute
   '/tests': typeof AuthenticatedTestsRoute
+  '/wellbeing': typeof AuthenticatedWellbeingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -154,10 +186,14 @@ export interface FileRoutesById {
   '/_authenticated/doubts': typeof AuthenticatedDoubtsRoute
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/premium': typeof AuthenticatedPremiumRoute
   '/_authenticated/revise': typeof AuthenticatedReviseRoute
+  '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
+  '/_authenticated/teacher': typeof AuthenticatedTeacherRoute
   '/_authenticated/tests': typeof AuthenticatedTestsRoute
+  '/_authenticated/wellbeing': typeof AuthenticatedWellbeingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -173,10 +209,14 @@ export interface FileRouteTypes {
     | '/doubts'
     | '/insights'
     | '/onboarding'
+    | '/parent'
     | '/planner'
     | '/premium'
     | '/revise'
+    | '/rewards'
+    | '/teacher'
     | '/tests'
+    | '/wellbeing'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -190,10 +230,14 @@ export interface FileRouteTypes {
     | '/doubts'
     | '/insights'
     | '/onboarding'
+    | '/parent'
     | '/planner'
     | '/premium'
     | '/revise'
+    | '/rewards'
+    | '/teacher'
     | '/tests'
+    | '/wellbeing'
   id:
     | '__root__'
     | '/'
@@ -208,10 +252,14 @@ export interface FileRouteTypes {
     | '/_authenticated/doubts'
     | '/_authenticated/insights'
     | '/_authenticated/onboarding'
+    | '/_authenticated/parent'
     | '/_authenticated/planner'
     | '/_authenticated/premium'
     | '/_authenticated/revise'
+    | '/_authenticated/rewards'
+    | '/_authenticated/teacher'
     | '/_authenticated/tests'
+    | '/_authenticated/wellbeing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/parent': {
+      id: '/_authenticated/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof AuthenticatedParentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/planner': {
       id: '/_authenticated/planner'
       path: '/planner'
@@ -330,11 +385,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReviseRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/rewards': {
+      id: '/_authenticated/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teacher': {
+      id: '/_authenticated/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof AuthenticatedTeacherRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tests': {
       id: '/_authenticated/tests'
       path: '/tests'
       fullPath: '/tests'
       preLoaderRoute: typeof AuthenticatedTestsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wellbeing': {
+      id: '/_authenticated/wellbeing'
+      path: '/wellbeing'
+      fullPath: '/wellbeing'
+      preLoaderRoute: typeof AuthenticatedWellbeingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -347,10 +423,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDoubtsRoute: typeof AuthenticatedDoubtsRoute
   AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPremiumRoute: typeof AuthenticatedPremiumRoute
   AuthenticatedReviseRoute: typeof AuthenticatedReviseRoute
+  AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
+  AuthenticatedTeacherRoute: typeof AuthenticatedTeacherRoute
   AuthenticatedTestsRoute: typeof AuthenticatedTestsRoute
+  AuthenticatedWellbeingRoute: typeof AuthenticatedWellbeingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -360,10 +440,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDoubtsRoute: AuthenticatedDoubtsRoute,
   AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPremiumRoute: AuthenticatedPremiumRoute,
   AuthenticatedReviseRoute: AuthenticatedReviseRoute,
+  AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
+  AuthenticatedTeacherRoute: AuthenticatedTeacherRoute,
   AuthenticatedTestsRoute: AuthenticatedTestsRoute,
+  AuthenticatedWellbeingRoute: AuthenticatedWellbeingRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

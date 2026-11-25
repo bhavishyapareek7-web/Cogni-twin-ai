@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Brain, Loader2, Mail } from "lucide-react";
+import { Brain, Building2, GraduationCap, Heart, Loader2, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { demoLogin } from "@/lib/demo.functions";
 
 const credentials = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
@@ -92,6 +93,20 @@ function AuthPage() {
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const demo = async (kind: "student" | "teacher" | "parent" | "org") => {
+    setBusy(true);
+    try {
+      const creds = await demoLogin({ data: { kind } });
+      const { error } = await supabase.auth.signInWithPassword(creds);
+      if (error) throw error;
+      navigate({ to: target, replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Demo login failed");
     } finally {
       setBusy(false);
     }
@@ -214,6 +229,33 @@ function AuthPage() {
                   {mode === "signin" ? "Create an account" : "Sign in"}
                 </button>
               </p>
+
+              <div className="mt-6 border-t border-border pt-5">
+                <p className="mb-3 text-center text-xs uppercase tracking-widest text-muted-foreground">
+                  Or explore a demo account
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      ["student", "Student", User],
+                      ["teacher", "Teacher", GraduationCap],
+                      ["parent", "Parent", Heart],
+                      ["org", "Organization", Building2],
+                    ] as const
+                  ).map(([kind, label, Icon]) => (
+                    <Button
+                      key={kind}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => void demo(kind)}
+                    >
+                      <Icon className="mr-1.5 size-4" /> {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </>
           )}
         </div>

@@ -8,6 +8,20 @@
       "when": 1795603823198,
       "tag": "0000_restrict_catalog_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795604010234,
+      "tag": "0001_add_family_and_org_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795604043781,
+      "tag": "0002_add_points_and_rewards",
+      "breakpoints": true
     }
   ]
 }

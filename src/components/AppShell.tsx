@@ -14,6 +14,10 @@ import {
   ShieldCheck,
   BookOpen,
   BarChart3,
+  Gift,
+  GraduationCap,
+  Heart,
+  HeartHandshake,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -21,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAccess } from "@/lib/entitlements.functions";
+import { useStudyReminders } from "@/hooks/use-study-reminders";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logoAsset from "@/assets/edutwin-logo.png.asset.json";
@@ -35,6 +40,10 @@ const nav = [
   { to: "/revise", label: "Revise", icon: Layers, premium: false },
   { to: "/tests", label: "Tests", icon: Target, premium: false },
   { to: "/planner", label: "Planner", icon: CalendarDays, premium: false },
+  { to: "/rewards", label: "Rewards", icon: Gift, premium: false },
+  { to: "/parent", label: "Parent", icon: Heart, premium: false, role: "parent" },
+  { to: "/teacher", label: "Teacher", icon: GraduationCap, premium: false, role: "teacher" },
+  { to: "/wellbeing", label: "Wellbeing", icon: HeartHandshake, premium: false },
   { to: "/companion", label: "Book", icon: BookOpen, premium: true },
   { to: "/insights", label: "Insights", icon: BarChart3, premium: true },
   { to: "/premium", label: "Premium", icon: Crown, premium: false },
@@ -61,6 +70,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     staleTime: 60_000,
   });
 
+
+  useStudyReminders(!!user);
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -102,6 +113,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <nav className="flex shrink-0 items-center gap-1 overflow-x-auto">
               {nav.map((item) => {
                 if (item.premium && !(access?.premium || access?.isAdmin)) return null;
+                if (
+                  "role" in item &&
+                  !(access?.roles.includes(item.role) || access?.isAdmin)
+                )
+                  return null;
                 const active = pathname === item.to;
                 return (
                   <Link

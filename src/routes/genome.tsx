@@ -5,6 +5,7 @@ import { knowledgeGenome, masteryLabel, type ConceptNode, type Mastery } from "@
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/genome")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Knowledge DNA — EduTwin AI" },

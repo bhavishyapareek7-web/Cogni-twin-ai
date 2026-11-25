@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { addOrgMember, getOrgOverview, getTeacherOverview } from "@/lib/org.functions";
 
 export const Route = createFileRoute("/_authenticated/teacher")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Teacher Dashboard — EduTwin AI" },

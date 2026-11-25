@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getTwin, rewriteStrategy } from "@/lib/twin.functions";
 
 export const Route = createFileRoute("/_authenticated/planner")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Adaptive Study Planner & XP — EduTwin AI" },

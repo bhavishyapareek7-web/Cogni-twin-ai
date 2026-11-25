@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { getParentOverview, linkChild } from "@/lib/family.functions";
 
 export const Route = createFileRoute("/_authenticated/parent")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Parent Dashboard — EduTwin AI" },

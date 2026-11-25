@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getPoints, redeemReward } from "@/lib/points.functions";
 
 export const Route = createFileRoute("/_authenticated/rewards")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Rewards Marketplace — EduTwin AI" },

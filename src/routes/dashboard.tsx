@@ -16,6 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { agents, examPrediction, strategy, twinInsights, twinStats } from "@/lib/twin-data";
 
 export const Route = createFileRoute("/dashboard")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Twin Dashboard — EduTwin AI" },

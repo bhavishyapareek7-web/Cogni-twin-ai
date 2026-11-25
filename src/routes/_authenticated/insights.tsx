@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getInsights } from "@/lib/insights.functions";
 
 export const Route = createFileRoute("/_authenticated/insights")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Study Intelligence — EduTwin AI" },

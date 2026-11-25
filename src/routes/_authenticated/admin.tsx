@@ -28,6 +28,7 @@ import {
 } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Admin Control Center — EduTwin AI" },

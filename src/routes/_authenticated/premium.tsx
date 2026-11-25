@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { getAccess, openFeature } from "@/lib/entitlements.functions";
 
 export const Route = createFileRoute("/_authenticated/premium")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Premium Hub — EduTwin AI" },

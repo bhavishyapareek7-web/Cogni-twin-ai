@@ -11,6 +11,7 @@ import { awardXp, solveDoubt } from "@/lib/twin.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/doubts")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "AI Doubt Solver — EduTwin AI" },

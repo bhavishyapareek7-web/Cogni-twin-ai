@@ -74,6 +74,7 @@ function AIAvatar({ speaking, listening }: { speaking: boolean; listening: boole
 
 
 export const Route = createFileRoute("/_authenticated/classroom")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Immersive Classroom — EduTwin AI" },

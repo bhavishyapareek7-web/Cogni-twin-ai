@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { askBook, summarizeBook } from "@/lib/companion.functions";
 
 export const Route = createFileRoute("/_authenticated/companion")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "AI Book Companion — EduTwin AI" },

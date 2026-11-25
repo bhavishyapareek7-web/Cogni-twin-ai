@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/wellbeing")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Wellbeing Space — EduTwin AI" },

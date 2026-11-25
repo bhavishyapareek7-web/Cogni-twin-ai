@@ -11,6 +11,7 @@ import { awardXp, generateMockTest, getTwin, submitMockTest } from "@/lib/twin.f
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tests")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Mock Test Engine & Rank Prediction — EduTwin AI" },

@@ -76,12 +76,14 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "EduTwin AI — Your Academic Operating System" },
       { name: "description", content: "An AI learning twin, knowledge DNA map and immersive classroom for any topic." },
+      { name: "google-site-verification", content: "XAkXB9G-gv54eYgXC4gbR5dmjyEsBw4hA6Lvu_OtHUA" },
       { name: "author", content: "EduTwin AI" },
       { property: "og:title", content: "EduTwin AI — Your Academic Operating System" },
       { property: "og:description", content: "An AI learning twin, knowledge DNA map and immersive classroom for any topic." },

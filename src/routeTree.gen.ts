@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GenomeRouteImport } from './routes/genome'
 import { Route as JeeMockTestRouteImport } from './routes/jee-mock-test'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
 import { Route as AuthenticatedCompanionRouteImport } from './routes/_authenticated/companion'
@@ -57,6 +58,11 @@ const GenomeRoute = GenomeRouteImport.update({
 const JeeMockTestRoute = JeeMockTestRouteImport.update({
   id: '/jee-mock-test',
   path: '/jee-mock-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/companion': typeof AuthenticatedCompanionRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
   '/companion': typeof AuthenticatedCompanionRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
   '/_authenticated/companion': typeof AuthenticatedCompanionRoute
@@ -203,6 +212,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/sitemap.xml'
     | '/admin'
     | '/classroom'
     | '/companion'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/sitemap.xml'
     | '/admin'
     | '/classroom'
     | '/companion'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/classroom'
     | '/_authenticated/companion'
@@ -269,6 +281,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   GenomeRoute: typeof GenomeRoute
   JeeMockTestRoute: typeof JeeMockTestRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -313,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/jee-mock-test'
       fullPath: '/jee-mock-test'
       preLoaderRoute: typeof JeeMockTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -460,6 +480,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   GenomeRoute: GenomeRoute,
   JeeMockTestRoute: JeeMockTestRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

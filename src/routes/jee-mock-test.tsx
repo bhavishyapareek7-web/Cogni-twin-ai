@@ -80,6 +80,7 @@ const steps = [
 ];
 
 export const Route = createFileRoute("/jee-mock-test")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title },

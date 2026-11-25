@@ -14,6 +14,7 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "EduTwin AI — Your Lifelong Digital Learning Twin" },

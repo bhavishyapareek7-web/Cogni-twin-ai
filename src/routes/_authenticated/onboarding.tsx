@@ -12,6 +12,7 @@ import { getTwin, saveOnboarding } from "@/lib/twin.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Set up your AI Twin — EduTwin AI" },

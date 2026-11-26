@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { chat, parseJson, schedule, twinContext } from "@/lib/ai.server";
+import { calculateMockResult } from "@/lib/exam-scoring";
 
 export const getTwin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -314,14 +315,7 @@ export const submitMockTest = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const attempted = data.correct + data.wrong;
-    const total = (attempted + data.skipped) * 4;
-    const score = data.correct * 4 - data.wrong;
-    const accuracy = attempted ? Math.round((data.correct / attempted) * 100) : 0;
-    const ratio = total ? Math.max(0, score) / total : 0;
-    const percentile = Math.min(99.9, Math.round(ratio * 98 * 10) / 10);
-    const rankLow = Math.max(1, Math.round((100 - percentile) * 1000 * 0.8));
-    const rankHigh = Math.max(rankLow + 200, Math.round((100 - percentile) * 1000 * 1.25));
+    const { score, total, accuracy, percentile, rankLow, rankHigh } = calculateMockResult(data);
     const { data: row, error } = await supabase
       .from("mock_tests")
       .insert({

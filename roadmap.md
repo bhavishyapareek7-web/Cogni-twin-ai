@@ -8,4 +8,7 @@
 - [x] Reminders: study nudge every 2 hours, water every 30 minutes.
 - [x] Live classroom AI avatar + live background.
 - [x] Mental-wellbeing space.
-- [ ] Monthly billing at ₹50 per student and ₹1,000 per organization with a 7-day free trial; blocked: built-in payments unavailable in India and user has no payment account yet (e.g. Razorpay signup needed).
+- [ ] Monthly billing at ₹50 per student and ₹1,000 per organization with a 7-day free trial; blocked: the Razorpay secure connection was not completed.
+- [ ] Add public CUET and NTA mock-test pages linked to the existing results-and-explanations engine.
+- [ ] Let organization admins assign students to teachers; teacher dashboards show only their assigned students.
+- [ ] Remove the "made by bhavishya" footer credit.

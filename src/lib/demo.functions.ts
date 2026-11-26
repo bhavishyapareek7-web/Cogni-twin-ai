@@ -87,6 +87,10 @@ export const demoLogin = createServerFn({ method: "POST" })
       ],
       { onConflict: "org_id,member_id", ignoreDuplicates: true },
     );
+    await supabaseAdmin.from("teacher_assignments").upsert(
+      { org_id: orgId, teacher_id: teacherId, student_id: studentId },
+      { onConflict: "org_id,teacher_id,student_id", ignoreDuplicates: true },
+    );
 
     // Seed sample progress for the demo student so the dashboards have something to show.
     const { count } = await supabaseAdmin

@@ -193,8 +193,13 @@ function PremiumHub() {
               ))}
             </ul>
             {!premium && (
-              <Button className="mt-4 w-full bg-neural" onClick={() => toast.info("Premium is granted by an administrator — ask your mentor to enable it for your account.")}>
-                <Crown className="mr-2 size-4" /> Unlock Premium
+              <Button
+                className="mt-4 w-full bg-neural"
+                onClick={() =>
+                  toast.info("Razorpay payments are not set up yet. Please connect Razorpay first.")
+                }
+              >
+                <Crown className="mr-2 size-4" /> Payments not set up yet
               </Button>
             )}
             {access.data?.usage?.length ? (

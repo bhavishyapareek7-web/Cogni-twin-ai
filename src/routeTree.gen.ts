@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CuetMockTestRouteImport } from './routes/cuet-mock-test'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as GenomeRouteImport } from './routes/genome'
 import { Route as JeeMockTestRouteImport } from './routes/jee-mock-test'
+import { Route as NtaMockTestRouteImport } from './routes/nta-mock-test'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedClassroomRouteImport } from './routes/_authenticated/classroom'
@@ -45,6 +47,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CuetMockTestRoute = CuetMockTestRouteImport.update({
+  id: '/cuet-mock-test',
+  path: '/cuet-mock-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -58,6 +65,11 @@ const GenomeRoute = GenomeRouteImport.update({
 const JeeMockTestRoute = JeeMockTestRouteImport.update({
   id: '/jee-mock-test',
   path: '/jee-mock-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NtaMockTestRoute = NtaMockTestRouteImport.update({
+  id: '/nta-mock-test',
+  path: '/nta-mock-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -139,9 +151,11 @@ const AuthenticatedWellbeingRoute = AuthenticatedWellbeingRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cuet-mock-test': typeof CuetMockTestRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/nta-mock-test': typeof NtaMockTestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
@@ -161,9 +175,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cuet-mock-test': typeof CuetMockTestRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/nta-mock-test': typeof NtaMockTestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/classroom': typeof AuthenticatedClassroomRoute
@@ -185,9 +201,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cuet-mock-test': typeof CuetMockTestRoute
   '/dashboard': typeof DashboardRoute
   '/genome': typeof GenomeRoute
   '/jee-mock-test': typeof JeeMockTestRoute
+  '/nta-mock-test': typeof NtaMockTestRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/classroom': typeof AuthenticatedClassroomRoute
@@ -209,9 +227,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/cuet-mock-test'
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/nta-mock-test'
     | '/sitemap.xml'
     | '/admin'
     | '/classroom'
@@ -231,9 +251,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/cuet-mock-test'
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/nta-mock-test'
     | '/sitemap.xml'
     | '/admin'
     | '/classroom'
@@ -254,9 +276,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/cuet-mock-test'
     | '/dashboard'
     | '/genome'
     | '/jee-mock-test'
+    | '/nta-mock-test'
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/classroom'
@@ -278,9 +302,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CuetMockTestRoute: typeof CuetMockTestRoute
   DashboardRoute: typeof DashboardRoute
   GenomeRoute: typeof GenomeRoute
   JeeMockTestRoute: typeof JeeMockTestRoute
+  NtaMockTestRoute: typeof NtaMockTestRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -307,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cuet-mock-test': {
+      id: '/cuet-mock-test'
+      path: '/cuet-mock-test'
+      fullPath: '/cuet-mock-test'
+      preLoaderRoute: typeof CuetMockTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -326,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/jee-mock-test'
       fullPath: '/jee-mock-test'
       preLoaderRoute: typeof JeeMockTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nta-mock-test': {
+      id: '/nta-mock-test'
+      path: '/nta-mock-test'
+      fullPath: '/nta-mock-test'
+      preLoaderRoute: typeof NtaMockTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -477,9 +517,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CuetMockTestRoute: CuetMockTestRoute,
   DashboardRoute: DashboardRoute,
   GenomeRoute: GenomeRoute,
   JeeMockTestRoute: JeeMockTestRoute,
+  NtaMockTestRoute: NtaMockTestRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

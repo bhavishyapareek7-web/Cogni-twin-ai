@@ -151,12 +151,18 @@ function Landing() {
           </Button>
         </div>
 
-        <p className="mt-5 text-sm text-muted-foreground">
-          Preparing for JEE?{" "}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+          <span>Free NTA preparation:</span>
           <Link to="/jee-mock-test" className="text-primary-glow underline underline-offset-4">
-            Try a free JEE Main mock test with rank prediction
+            JEE Main
           </Link>
-        </p>
+          <Link to="/cuet-mock-test" className="text-primary-glow underline underline-offset-4">
+            CUET UG
+          </Link>
+          <Link to="/nta-mock-test" className="text-primary-glow underline underline-offset-4">
+            JEE, NEET & CUET mock tests
+          </Link>
+        </div>
 
       </section>
 

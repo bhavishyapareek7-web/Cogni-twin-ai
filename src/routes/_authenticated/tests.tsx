@@ -8,9 +8,14 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { awardXp, generateMockTest, getTwin, submitMockTest } from "@/lib/twin.functions";
+import { markingForExam } from "@/lib/exam-scoring";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tests")({
+  validateSearch: (search: Record<string, unknown>): { exam?: string } => {
+    const exam = typeof search.exam === "string" ? search.exam : undefined;
+    return exam && ["JEE Main", "NEET UG", "CUET UG"].includes(exam) ? { exam } : {};
+  },
   staticData: { sitemap: false },
   head: () => ({
     meta: [
@@ -32,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/tests")({
   component: Tests,
 });
 
-const EXAMS = ["JEE", "NEET", "CBSE Boards", "UPSC", "CAT", "SAT"];
+const EXAMS = ["JEE Main", "NEET UG", "CUET UG", "CBSE Boards", "UPSC", "CAT", "SAT"];
 const LEVELS = ["easy", "medium", "hard", "exam", "olympiad"] as const;
 
 type Question = {
@@ -44,6 +49,7 @@ type Question = {
 };
 
 function Tests() {
+  const search = Route.useSearch();
   const qc = useQueryClient();
   const build = useServerFn(generateMockTest);
   const submit = useServerFn(submitMockTest);
@@ -51,7 +57,7 @@ function Tests() {
   const loadTwin = useServerFn(getTwin);
   const twin = useQuery({ queryKey: ["twin"], queryFn: () => loadTwin({}) });
 
-  const [exam, setExam] = useState("JEE");
+  const [exam, setExam] = useState(search.exam ?? "JEE Main");
   const [topic, setTopic] = useState("");
   const [level, setLevel] = useState<(typeof LEVELS)[number]>("exam");
   const [count, setCount] = useState(5);
@@ -66,6 +72,9 @@ function Tests() {
     percentile: number;
     rankLow: number;
     rankHigh: number;
+    correct: number;
+    wrong: number;
+    skipped: number;
     weak: string[];
   } | null>(null);
 
@@ -115,6 +124,9 @@ function Tests() {
         percentile: Number(row.predicted_percentile ?? 0),
         rankLow: row.rank_low ?? 0,
         rankHigh: row.rank_high ?? 0,
+        correct: Number((row.analysis as { correct?: number })?.correct ?? 0),
+        wrong: Number((row.analysis as { wrong?: number })?.wrong ?? 0),
+        skipped: Number((row.analysis as { skipped?: number })?.skipped ?? 0),
         weak: ((row.analysis as { weakSubtopics?: string[] })?.weakSubtopics ?? []) as string[],
       });
       void xp({ data: { amount: 40, reason: "completed a mock test" } });
@@ -231,7 +243,7 @@ function Tests() {
               </button>
             ))}
             <span className="ml-auto text-xs text-muted-foreground">
-              +4 correct · −1 wrong · negative marking on
+              {markingForExam(exam).label}
             </span>
           </div>
         </div>
@@ -317,6 +329,10 @@ function Tests() {
                 <p className="mt-1 text-lg font-bold">{s.value}</p>
               </div>
             ))}
+            <p className="text-sm text-muted-foreground sm:col-span-4">
+              {result.correct} correct · {result.wrong} wrong · {result.skipped} skipped. Review the
+              correct options and explanations above.
+            </p>
             {result.weak.length > 0 && (
               <div className="sm:col-span-4">
                 <p className="text-xs uppercase tracking-widest text-muted-foreground">

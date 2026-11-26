@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 async function importAdmin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -18,6 +20,12 @@ type MemberProgress = {
   testsTaken: number;
   bestScore: number | null;
 };
+
+async function hasOrgAdminRole(supabase: SupabaseClient<Database>, userId: string) {
+  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  const held = new Set((roles ?? []).map((r) => r.role as string));
+  return held.has("org_admin") || held.has("super_admin") || held.has("admin");
+}
 
 async function memberProgress(
   admin: Awaited<ReturnType<typeof importAdmin>>,
@@ -51,45 +59,52 @@ async function memberProgress(
   };
 }
 
-/** Teacher dashboard: students in every organization where the caller teaches. */
+/** Teacher dashboard: only students explicitly assigned to the signed-in teacher. */
 export const getTeacherOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: memberships } = await context.supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("member_id", context.userId)
-      .eq("member_role", "teacher");
-    const orgIds = [...new Set((memberships ?? []).map((m) => m.org_id))];
+    const { data: assignments } = await context.supabase
+      .from("teacher_assignments")
+      .select("student_id")
+      .eq("teacher_id", context.userId);
+    const studentIds = [...new Set((assignments ?? []).map((a) => a.student_id))];
     const admin = await importAdmin();
     const students: MemberProgress[] = [];
-    for (const orgId of orgIds) {
-      const { data: rows } = await admin
-        .from("org_members")
-        .select("member_id")
-        .eq("org_id", orgId)
-        .eq("member_role", "student");
-      for (const row of rows ?? []) {
-        students.push(await memberProgress(admin, row.member_id, "student"));
-      }
+    for (const studentId of studentIds) {
+      students.push(await memberProgress(admin, studentId, "student"));
     }
     return { students };
   });
 
-/** Organization admin dashboard: all members of the caller's organization. */
+/** Organization admin dashboard: members and teacher-student assignments. */
 export const getOrgOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: rows } = await context.supabase
-      .from("org_members")
-      .select("member_id, member_role")
-      .eq("org_id", context.userId);
+    const isOrgAdmin = await hasOrgAdminRole(context.supabase, context.userId);
+    const [membersRes, assignmentsRes] = await Promise.all([
+      context.supabase
+        .from("org_members")
+        .select("member_id, member_role")
+        .eq("org_id", context.userId),
+      context.supabase
+        .from("teacher_assignments")
+        .select("id, teacher_id, student_id")
+        .eq("org_id", context.userId),
+    ]);
     const admin = await importAdmin();
     const members: MemberProgress[] = [];
-    for (const row of rows ?? []) {
+    for (const row of membersRes.data ?? []) {
       members.push(await memberProgress(admin, row.member_id, row.member_role));
     }
-    return { members };
+    const names = new Map(members.map((member) => [member.memberId, member.name]));
+    const assignments = (assignmentsRes.data ?? []).map((assignment) => ({
+      id: assignment.id,
+      teacherId: assignment.teacher_id,
+      studentId: assignment.student_id,
+      teacherName: names.get(assignment.teacher_id) ?? "Teacher",
+      studentName: names.get(assignment.student_id) ?? "Student",
+    }));
+    return { isOrgAdmin, members, assignments };
   });
 
 /** Organization admin adds a student or teacher by their login email. */
@@ -101,13 +116,7 @@ export const addOrgMember = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    // Verify the caller is an organization admin through their own role rows (RLS-scoped).
-    const { data: roles } = await context.supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", context.userId);
-    const held = new Set((roles ?? []).map((r) => r.role as string));
-    if (!held.has("org_admin") && !held.has("super_admin") && !held.has("admin")) {
+    if (!(await hasOrgAdminRole(context.supabase, context.userId))) {
       return { ok: false as const, reason: "Only organization admins can add members." };
     }
 
@@ -123,7 +132,6 @@ export const addOrgMember = createServerFn({ method: "POST" })
       { onConflict: "org_id,member_id" },
     );
     if (error) return { ok: false as const, reason: error.message };
-    // Students are the default account type and need no staff role; teachers do.
     if (data.role === "teacher") {
       await admin
         .from("user_roles")
@@ -131,6 +139,56 @@ export const addOrgMember = createServerFn({ method: "POST" })
           { user_id: member.id, role: "teacher" },
           { onConflict: "user_id,role", ignoreDuplicates: true },
         );
+    }
+    return { ok: true as const, reason: null };
+  });
+
+/** Organization admin assigns one of their students to one of their teachers. */
+export const assignStudentToTeacher = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { teacherId: string; studentId: string }) =>
+    z.object({ teacherId: z.string().uuid(), studentId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    if (!(await hasOrgAdminRole(context.supabase, context.userId))) {
+      return { ok: false as const, reason: "Only organization admins can assign students." };
+    }
+    if (data.teacherId === data.studentId) {
+      return { ok: false as const, reason: "Choose different teacher and student accounts." };
+    }
+    const { error } = await context.supabase.from("teacher_assignments").insert({
+      org_id: context.userId,
+      teacher_id: data.teacherId,
+      student_id: data.studentId,
+    });
+    if (error) {
+      return {
+        ok: false as const,
+        reason:
+          error.code === "23505"
+            ? "That student is already assigned to this teacher."
+            : "Choose a teacher and student who both belong to your organization.",
+      };
+    }
+    return { ok: true as const, reason: null };
+  });
+
+/** Organization admin removes a teacher-student assignment. */
+export const removeTeacherAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    if (!(await hasOrgAdminRole(context.supabase, context.userId))) {
+      return { ok: false as const, reason: "Only organization admins can remove assignments." };
+    }
+    const { data: removed, error } = await context.supabase
+      .from("teacher_assignments")
+      .delete()
+      .eq("id", data.id)
+      .eq("org_id", context.userId)
+      .select("id");
+    if (error || !removed?.length) {
+      return { ok: false as const, reason: "Assignment not found or already removed." };
     }
     return { ok: true as const, reason: null };
   });

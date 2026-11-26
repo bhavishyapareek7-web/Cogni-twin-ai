@@ -172,10 +172,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
       <main>{children}</main>
-      <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
-        made with <span className="text-destructive">❤</span> by bhavishya
-      </footer>
-
     </div>
   );
 }

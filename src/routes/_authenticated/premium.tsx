@@ -23,6 +23,18 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { getAccess, openFeature } from "@/lib/entitlements.functions";
+import { getBilling, startSubscription, confirmSubscription, cancelSubscription } from "@/lib/billing.functions";
+
+function loadCheckout(): Promise<void> {
+  if ((window as any).Razorpay) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => res();
+    s.onerror = () => rej(new Error("Could not load Razorpay"));
+    document.body.appendChild(s);
+  });
+}
 
 export const Route = createFileRoute("/_authenticated/premium")({
   staticData: { sitemap: false },
@@ -99,6 +111,50 @@ function PremiumHub() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const loadBilling = useServerFn(getBilling);
+  const start = useServerFn(startSubscription);
+  const confirm = useServerFn(confirmSubscription);
+  const cancel = useServerFn(cancelSubscription);
+  const billing = useQuery({ queryKey: ["billing"], queryFn: () => loadBilling({}) });
+  const refresh = () => {
+    access.refetch();
+    billing.refetch();
+  };
+  const sync = async (id: string) => {
+    try {
+      const r = await confirm({ data: { subscriptionId: id } });
+      if (r?.until) toast.success("Premium is active!");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+    refresh();
+  };
+  const subscribe = useMutation({
+    mutationFn: async (tier: "student" | "organization") => {
+      const { subscriptionId, keyId } = await start({ data: { tier } });
+      await loadCheckout();
+      const rzp = new (window as any).Razorpay({
+        key: keyId,
+        subscription_id: subscriptionId,
+        name: "EduTwin AI",
+        description: tier === "student" ? "Student plan · ₹50/month" : "Organisation plan · ₹1,000/month",
+        handler: () => sync(subscriptionId),
+        modal: { ondismiss: () => sync(subscriptionId) },
+      });
+      rzp.on("payment.failed", (r: any) => toast.error(r.error?.description ?? "Payment failed"));
+      rzp.open();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const stop = useMutation({
+    mutationFn: (id: string) => cancel({ data: { subscriptionId: id } }),
+    onSuccess: () => {
+      toast.success("Subscription cancelled.");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const sub = billing.data;
   const premium = access.data?.premium ?? false;
   const features = access.data?.features ?? [];
 
@@ -193,14 +249,33 @@ function PremiumHub() {
               ))}
             </ul>
             {!premium && (
-              <Button
-                className="mt-4 w-full bg-neural"
-                onClick={() =>
-                  toast.info("Razorpay payments are not set up yet. Please connect Razorpay first.")
-                }
-              >
-                <Crown className="mr-2 size-4" /> Payments not set up yet
-              </Button>
+              <div className="mt-4 space-y-2">
+                <Button className="w-full bg-neural" disabled={subscribe.isPending} onClick={() => subscribe.mutate("student")}>
+                  <Crown className="mr-2 size-4" /> Student · ₹50/month
+                </Button>
+                <Button variant="outline" className="w-full" disabled={subscribe.isPending} onClick={() => subscribe.mutate("organization")}>
+                  Organisation · ₹1,000/month
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">7-day free trial for new subscribers. Cancel anytime.</p>
+              </div>
+            )}
+            {sub && sub.status !== "created" && (
+              <div className="mt-4 rounded-lg border border-border p-3 text-sm">
+                <p>
+                  {sub.tier === "student" ? "Student" : "Organisation"} plan · {sub.status}
+                </p>
+                {sub.trial_ends_at && new Date(sub.trial_ends_at) > new Date() && (
+                  <p className="text-muted-foreground">Free trial until {new Date(sub.trial_ends_at).toLocaleDateString("en-IN")}</p>
+                )}
+                {sub.cancel_at_cycle_end && sub.current_end && (
+                  <p className="text-muted-foreground">Cancels on {new Date(sub.current_end).toLocaleDateString("en-IN")}</p>
+                )}
+                {["active", "authenticated", "pending"].includes(sub.status) && !sub.cancel_at_cycle_end && (
+                  <Button size="sm" variant="ghost" className="mt-2" disabled={stop.isPending} onClick={() => stop.mutate(sub.razorpay_subscription_id)}>
+                    Cancel subscription
+                  </Button>
+                )}
+              </div>
             )}
             {access.data?.usage?.length ? (
               <div className="mt-5">

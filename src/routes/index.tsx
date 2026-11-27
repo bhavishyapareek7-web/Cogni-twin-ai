@@ -179,6 +179,30 @@ function Landing() {
           ))}
         </div>
       </section>
+
+      <section id="pricing" className="mx-auto max-w-5xl px-4 pb-24 sm:px-6">
+        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">
+          Simple monthly plans · <span className="text-gradient">7 days free</span>
+        </h2>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {[
+            { name: "Student", price: "₹50", body: "Your full AI Twin, immersive classroom, mock tests and Premium tools." },
+            { name: "Organisation", price: "₹1,000", body: "For schools and coaching centres: add students, teachers and parents." },
+          ].map((plan) => (
+            <article key={plan.name} className="panel flex flex-col p-6">
+              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <p className="mt-2 text-3xl font-bold">
+                {plan.price}
+                <span className="text-sm font-normal text-muted-foreground"> / month</span>
+              </p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{plan.body}</p>
+              <Button className="mt-5 bg-neural" asChild>
+                <Link to="/premium">Start 7-day free trial</Link>
+              </Button>
+            </article>
+          ))}
+        </div>
+      </section>
     </AppShell>
   );
 }

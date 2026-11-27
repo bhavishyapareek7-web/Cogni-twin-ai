@@ -71,6 +71,93 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_plans: {
+        Row: {
+          amount_paise: number
+          created_at: string
+          id: string
+          mode: string
+          razorpay_plan_id: string
+          tier: string
+        }
+        Insert: {
+          amount_paise: number
+          created_at?: string
+          id?: string
+          mode: string
+          razorpay_plan_id: string
+          tier: string
+        }
+        Update: {
+          amount_paise?: number
+          created_at?: string
+          id?: string
+          mode?: string
+          razorpay_plan_id?: string
+          tier?: string
+        }
+        Relationships: []
+      }
+      billing_subscriptions: {
+        Row: {
+          cancel_at_cycle_end: boolean
+          created_at: string
+          current_end: string | null
+          id: string
+          mode: string
+          razorpay_plan_id: string
+          razorpay_subscription_id: string
+          status: string
+          tier: string
+          trial_ends_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_cycle_end?: boolean
+          created_at?: string
+          current_end?: string | null
+          id?: string
+          mode: string
+          razorpay_plan_id: string
+          razorpay_subscription_id: string
+          status?: string
+          tier: string
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_cycle_end?: boolean
+          created_at?: string
+          current_end?: string | null
+          id?: string
+          mode?: string
+          razorpay_plan_id?: string
+          razorpay_subscription_id?: string
+          status?: string
+          tier?: string
+          trial_ends_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      billing_trials: {
+        Row: {
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entitlements: {
         Row: {
           created_at: string
